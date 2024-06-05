@@ -25,8 +25,29 @@ export async function selectScaleByDate(date: string) {
   }
 }
 
-export async function updateScale(scales: IScale[]) {
+export async function selectScaleSummary() {
+  const pool = await connection.openConnection();
 
+  try {
+    const query = "SELECT * FROM W_DGCS_CONSULTA_ESCALAS_RESUMO"
+
+    const scaleSummary = await pool.request().query(query)
+
+    return scaleSummary.recordset
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection(pool);
+    console.log("Conexão fechada");
+  }
+}
+
+export async function updateScale(scales: IScale[]) {
   const pool = await connection.openConnection();
 
   try {
@@ -34,15 +55,13 @@ export async function updateScale(scales: IScale[]) {
 
     await Promise.all(
       scales.map(async (scale) => {
-
         scale.options.forEach((item) => {
           if (item.type === "null") {
             item.type = "";
           }
         });
 
-    /*     console.log("status", scale.options); */
-
+        /*     console.log("status", scale.options); */
 
         /*         scale.date = "2024-05-27" */
 
