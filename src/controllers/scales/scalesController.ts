@@ -5,6 +5,8 @@ import {
   updateScale,
 } from "../../models/scales/scalesModels";
 import { transformedScale } from "../../models/scales/utils/transformedScale";
+import { separateScaleByWeek } from "./utils/separateScaleByWeek";
+import { removeDuplicateObject } from "./utils/removeDuplicateObject";
 
 export async function findScaleByDate(req: Request, res: Response) {
   try {
@@ -25,9 +27,17 @@ export async function findScaleByDate(req: Request, res: Response) {
 
 export async function findScaleSummary(req: Request, res: Response) {
   try {
-    const scaleSummary = await selectScaleSummary();
+    const getScaleSummary = await selectScaleSummary();
 
-    res.status(200).json({ scaleSummary });
+    const scaleSummaryByWeek = separateScaleByWeek(
+      getScaleSummary,
+      Number("06"),
+      Number("2024")
+    );
+
+    const data = removeDuplicateObject(scaleSummaryByWeek)
+
+    res.status(200).json(data);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

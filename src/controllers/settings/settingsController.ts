@@ -8,6 +8,7 @@ import { IEmployee } from "src/models/settings/settings";
 import { removeDuplicateObject } from "./libs/removeDuplicateObject";
 import { addDayOffInArray } from "./libs/addDayOffInArray";
 import { addVacationInArray } from "./libs/addVacationInArray";
+import { filterDayOffAndVacation } from "./libs/filterDayOffAndVacation";
 
 export async function getAllEmployees(_req: Request, res: Response) {
   try {
@@ -20,7 +21,9 @@ export async function getAllEmployees(_req: Request, res: Response) {
 
     const employeesWithOutDuplicateObjects = removeDuplicateObject(employees);
 
-    return res.status(200).json(employeesWithOutDuplicateObjects);
+    const filterArray = filterDayOffAndVacation(employeesWithOutDuplicateObjects)
+
+    return res.status(200).json(filterArray);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(400).end();

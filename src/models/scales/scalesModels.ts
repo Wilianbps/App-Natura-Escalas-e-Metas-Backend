@@ -29,11 +29,12 @@ export async function selectScaleSummary() {
   const pool = await connection.openConnection();
 
   try {
-    const query = "SELECT * FROM W_DGCS_CONSULTA_ESCALAS_RESUMO"
+    /*  const query = `SELECT * FROM W_DGCS_CONSULTA_ESCALAS_RESUMO` */
+    const query = `SELECT ID_VENDEDOR_LINX AS id, NOME_VENDEDOR AS name, DATA_ESCALA AS date, DAY(DATA_ESCALA) AS day, MONTH(DATA_ESCALA) AS month, YEAR(DATA_ESCALA) AS year, ID_TURNO AS turnId, STATUS AS status, HR_INICIO AS startTime, HR_FIM AS endTime FROM W_DGCS_CONSULTA_ESCALAS_RESUMO WHERE MONTH(DATA_ESCALA) = '6' AND YEAR(DATA_ESCALA) = '2024'`;
 
-    const scaleSummary = await pool.request().query(query)
+    const scaleSummary = await pool.request().query(query);
 
-    return scaleSummary.recordset
+    return scaleSummary.recordset;
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);
