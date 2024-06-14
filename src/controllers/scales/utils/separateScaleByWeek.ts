@@ -40,8 +40,6 @@ export function separateScaleByWeek(
     { weekStartsOn: 1 }
   );
 
-  /*   const numberOfWeeks = differenceInCalendarWeeks(lastDay, firstDay) + 1; */
-
   const numberOfWeeks = result.length;
 
   const weeksArray: WeeksArray = Array.from(
@@ -53,24 +51,9 @@ export function separateScaleByWeek(
     item.setUTCHours(0, 0, 0, 0);
   });
 
-  const firstWeekDay = getDay(firstDay);
-
-  /*  */
-
-  /*   for (
-    let i = 0;
-    i < firstWeekDay && startOfWeek(firstDay).getTime() <= lastDay.getTime();
-    i++
-  ) {
-    weeksArray[0].push(null);
-  } */
-
-  /*   for (let i = 0; i < firstWeekDay; i++) {
-    weeksArray[0].push(null);
-  } */
-
+  
   for (let weekNumber = 0; weekNumber < numberOfWeeks; weekNumber++) {
-    console.log("weekNumber", weekNumber);
+
     scaleSummary.forEach((item) => {
       const date = item.date;
 
@@ -95,28 +78,6 @@ export function separateScaleByWeek(
       }
     });
   }
-  /*  scaleSummary.forEach((item) => {
-    const date = new Date(item.date);
-
-    const weekStart = startOfWeek(date);
-
-    const weekNumber = Math.floor(
-      (weekStart.getTime() - startOfWeek(firstDay).getTime()) /
-        (7 * 24 * 60 * 60 * 1000) +
-        1
-    );
-
-    weeksArray[weekNumber].push(item);
-  }); */
-
-  /*   console.log("firstDay", firstDay);
-  console.log("lastDay", lastDay);
-
-  console.log("numberOfWeeks", numberOfWeeks);
-
-  console.log("weeksArray", weeksArray.length); */
-
-  /*   console.log("result", result) */
-
+ 
   return weeksArray;
 }

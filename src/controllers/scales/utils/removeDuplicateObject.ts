@@ -1,5 +1,19 @@
+import {
+  format,
+  isAfter,
+  isBefore,
+  isSameDay,
+  isValid,
+  isWithinInterval,
+  parseISO,
+  setHours,
+  setMinutes,
+  startOfDay,
+  subHours,
+} from "date-fns";
+import { formatInTimeZone, fromZonedTime  } from "date-fns-tz";
 
-import { formatInTimeZone, toZonedTime } from "date-fns-tz";
+
 
 export interface IScaleSummary {
   id: string;
@@ -13,25 +27,62 @@ export interface IScaleSummary {
   startTime: string;
   endTime: string;
   dayOfWeek: number;
+  turn: string;
 }
 
 type Day = IScaleSummary | null;
 type Week = Day[];
 type WeeksArray = Week[];
 
-export function removeDuplicateObject(scaleSummary: WeeksArray){
+export function removeDuplicateObject(scaleSummary: WeeksArray) {
+  function verificarTurno(startTime: string, endTime: string): string {
+    /*     formatInTimeZone */
+
+    // Definindo os intervalos de cada turno
+    const turno1Inicio = subHours(setMinutes(setHours(startOfDay(startTime), 7), 0), 3);
+    const turno2Inicio = subHours(setMinutes(setHours(startOfDay(startTime), 11), 0), 3);
+    const turno3Inicio = subHours(setMinutes(setHours(startOfDay(startTime), 14), 30), 3);
+    const turno3Fim = subHours(setMinutes(setHours(startOfDay(startTime), 22), 0), 3);
+
+  
+    console.log("startTime", startTime)
+    console.log("turno2Inicio", turno2Inicio)
+    console.log(isBefore(startTime, turno2Inicio))
+
+
+    // Verificando em qual intervalo a data/hora está
+    if ((isAfter(startTime, turno1Inicio) ||
+    isSameDay(startTime, turno1Inicio)) && isBefore(startTime, turno2Inicio)) {
+      return "T1";
+    } 
+     if ((isAfter(startTime, turno2Inicio) ||
+    isSameDay(startTime, turno2Inicio)) && isBefore(startTime, turno3Inicio)) {
+      return "T2";
+    } 
+    if (isSameDay(startTime, turno3Inicio) || isAfter(startTime, turno3Inicio)) {
+      return "T3";
+    } else {
+      return "";
+    }
+  }
 
   const result: WeeksArray = [];
 
-  scaleSummary.forEach((week)=>{
+  scaleSummary.forEach((week) => {
     const map = new Map();
     const weekResult: Week = [];
     week.forEach((item) => {
       if (item && !map.has(item.id)) {
-        map.set(item.id, { id: item.id, name: item.name, dayOfWeek: item.dayOfWeek, days: [] });
+        map.set(item.id, {
+          id: item.id,
+          name: item.name,
+          dayOfWeek: item.dayOfWeek,
+          days: [],
+        });
       }
 
       if (item) {
+        const turn = verificarTurno(item.startTime, item.endTime);
         const entry = map.get(item.id);
         entry.days.push({
           date: item.date,
@@ -40,16 +91,16 @@ export function removeDuplicateObject(scaleSummary: WeeksArray){
           year: item.year,
           turnId: item.turnId,
           status: item.status,
-          startTime: formatInTimeZone(item.startTime, "UTC", 'HH:mm'),
-          endTime: formatInTimeZone(item.endTime, "UTC", 'HH:mm'),
+          startTime: formatInTimeZone(item.startTime, "UTC", "HH:mm"),
+          endTime: formatInTimeZone(item.endTime, "UTC", "HH:mm"),
           dayOfWeek: item.dayOfWeek,
+          turn,
         });
       }
     });
     map.forEach((value) => weekResult.push(value));
     result.push(weekResult);
-  })
+  });
 
-  return result
-
+  return result;
 }
