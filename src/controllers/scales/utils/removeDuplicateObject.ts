@@ -1,19 +1,13 @@
 import {
-  format,
   isAfter,
   isBefore,
   isSameDay,
-  isValid,
-  isWithinInterval,
-  parseISO,
   setHours,
   setMinutes,
   startOfDay,
   subHours,
 } from "date-fns";
 import { formatInTimeZone, fromZonedTime  } from "date-fns-tz";
-
-
 
 export interface IScaleSummary {
   id: string;
@@ -35,21 +29,15 @@ type Week = Day[];
 type WeeksArray = Week[];
 
 export function removeDuplicateObject(scaleSummary: WeeksArray) {
+
   function verificarTurno(startTime: string, endTime: string): string {
-    /*     formatInTimeZone */
 
     // Definindo os intervalos de cada turno
+    
     const turno1Inicio = subHours(setMinutes(setHours(startOfDay(startTime), 7), 0), 3);
     const turno2Inicio = subHours(setMinutes(setHours(startOfDay(startTime), 11), 0), 3);
     const turno3Inicio = subHours(setMinutes(setHours(startOfDay(startTime), 14), 30), 3);
-    const turno3Fim = subHours(setMinutes(setHours(startOfDay(startTime), 22), 0), 3);
-
   
-    console.log("startTime", startTime)
-    console.log("turno2Inicio", turno2Inicio)
-    console.log(isBefore(startTime, turno2Inicio))
-
-
     // Verificando em qual intervalo a data/hora está
     if ((isAfter(startTime, turno1Inicio) ||
     isSameDay(startTime, turno1Inicio)) && isBefore(startTime, turno2Inicio)) {
@@ -91,8 +79,8 @@ export function removeDuplicateObject(scaleSummary: WeeksArray) {
           year: item.year,
           turnId: item.turnId,
           status: item.status,
-          startTime: formatInTimeZone(item.startTime, "UTC", "HH:mm"),
-          endTime: formatInTimeZone(item.endTime, "UTC", "HH:mm"),
+          startTime: item.startTime !== null ? formatInTimeZone(item.startTime, "UTC", "HH:mm") : "",
+          endTime: item.startTime !== null ? formatInTimeZone(item.endTime, "UTC", "HH:mm") : "",
           dayOfWeek: item.dayOfWeek,
           turn,
         });

@@ -27,15 +27,21 @@ export async function findScaleByDate(req: Request, res: Response) {
 
 export async function findScaleSummary(req: Request, res: Response) {
   try {
-    const getScaleSummary = await selectScaleSummary();
+    const { month, year } = req.query;
+
+    console.log(month, year)
+
+    if (!month || !year) return res.status(400).send()
+
+    const getScaleSummary = await selectScaleSummary(month.toString(), year.toString());
 
     const scaleSummaryByWeek = separateScaleByWeek(
       getScaleSummary,
-      Number("06"),
-      Number("2024")
+      Number(month),
+      Number(year)
     );
 
-    const data = removeDuplicateObject(scaleSummaryByWeek)
+    const data = removeDuplicateObject(scaleSummaryByWeek as []);
 
     res.status(200).json(data);
   } catch (error) {
