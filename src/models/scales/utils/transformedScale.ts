@@ -17,7 +17,7 @@ export function transformedScale(scale: IRecordSet<IRecordSetScale>) {
     let objScale = {};
     const data = Object.entries(item).map(([_key, value], index) => {
       let array = [];
-      /*       console.log(key, value, index) */
+   
 
       if (index > 4) {
         array.push({ id: index - 4, type: value });

@@ -12,7 +12,7 @@ export async function findScaleByDate(req: Request, res: Response) {
   try {
     const { date } = req.query;
 
-    if (!date) return res.status(404).send();
+    if (!date) return res.status(400).send();
 
     const scale = await selectScaleByDate(date as string);
 

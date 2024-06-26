@@ -45,8 +45,6 @@ export function removeDuplicateObject(data: IEmployee[]){
            idsSelers.add(employee.idSeler);
            return true;
          }
-    
-   
   });
 
   return employeesWithOutDuplicateObjects
