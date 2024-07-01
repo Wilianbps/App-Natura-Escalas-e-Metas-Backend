@@ -7,7 +7,7 @@ import {
   startOfDay,
   subHours,
 } from "date-fns";
-import { formatInTimeZone, fromZonedTime  } from "date-fns-tz";
+import { formatInTimeZone  } from "date-fns-tz";
 
 export interface IScaleSummary {
   id: string;

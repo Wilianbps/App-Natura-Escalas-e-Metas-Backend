@@ -29,8 +29,6 @@ export async function findScaleSummary(req: Request, res: Response) {
   try {
     const { month, year } = req.query;
 
-    console.log(month, year)
-
     if (!month || !year) return res.status(400).send()
 
     const getScaleSummary = await selectScaleSummary(month.toString(), year.toString());
