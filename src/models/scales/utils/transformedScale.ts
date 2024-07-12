@@ -7,6 +7,7 @@ interface IRecordSetScale {
   date: Date;
   idTurn: number;
   status: number;
+  activeDays: number
   options: { id: number; type: string }[];
 }
 
@@ -19,8 +20,8 @@ export function transformedScale(scale: IRecordSet<IRecordSetScale>) {
       let array = [];
    
 
-      if (index > 4) {
-        array.push({ id: index - 4, type: value });
+      if (index > 5) {
+        array.push({ id: index - 5, type: value });
       }
 
       return array;
@@ -44,6 +45,7 @@ export function transformedScale(scale: IRecordSet<IRecordSetScale>) {
             ? "T2"
             : index >= 15 && index <= 30 && "T3",
       status: item.status === 1 ? true : false,
+      activeDays: Number(item.activeDays),
       options: options,
     };
 

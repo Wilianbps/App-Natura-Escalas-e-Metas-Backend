@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  SelectInputFlow,
   selectScaleByDate,
   selectScaleSummary,
   updateScale,
@@ -29,9 +30,12 @@ export async function findScaleSummary(req: Request, res: Response) {
   try {
     const { month, year } = req.query;
 
-    if (!month || !year) return res.status(400).send()
+    if (!month || !year) return res.status(400).send();
 
-    const getScaleSummary = await selectScaleSummary(month.toString(), year.toString());
+    const getScaleSummary = await selectScaleSummary(
+      month.toString(),
+      year.toString()
+    );
 
     const scaleSummaryByWeek = separateScaleByWeek(
       getScaleSummary,
@@ -59,6 +63,25 @@ export async function updateScaleByDate(req: Request, res: Response) {
     } else {
       res.status(500).json({ message: (await result).message });
     }
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function findInputFlow(req: Request, res: Response) {
+  try {
+    const { date, codeStore } = req.query;
+
+    console.log(date)
+
+    if (!date || !codeStore) return res.status(400).end();
+
+    const result = await SelectInputFlow(date as string, codeStore as string)
+
+    console.log(typeof date);
+
+    res.status(200).json(result)
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
