@@ -7,18 +7,21 @@ interface IRecordSetScale {
   date: Date;
   idTurn: number;
   status: number;
-  activeDays: number
+  activeDays: number;
   options: { id: number; type: string }[];
 }
 
+interface IOptions {
+  id: number;
+  type: string | null;
+}
+
 export function transformedScale(scale: IRecordSet<IRecordSetScale>) {
-  /*   console.log("scale", scale); */
 
   return scale.map((item) => {
     let objScale = {};
     const data = Object.entries(item).map(([_key, value], index) => {
       let array = [];
-   
 
       if (index > 5) {
         array.push({ id: index - 5, type: value });
@@ -45,6 +48,7 @@ export function transformedScale(scale: IRecordSet<IRecordSetScale>) {
             ? "T2"
             : index >= 15 && index <= 30 && "T3",
       status: item.status === 1 ? true : false,
+/*       status: updateStatus(item.status, options), */
       activeDays: Number(item.activeDays),
       options: options,
     };

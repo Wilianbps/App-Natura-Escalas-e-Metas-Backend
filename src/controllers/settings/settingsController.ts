@@ -21,7 +21,9 @@ export async function getAllEmployees(_req: Request, res: Response) {
 
     const employeesWithOutDuplicateObjects = removeDuplicateObject(employees);
 
-    const filterArray = filterDayOffAndVacation(employeesWithOutDuplicateObjects)
+    const filterArray = filterDayOffAndVacation(
+      employeesWithOutDuplicateObjects
+    );
 
     return res.status(200).json(filterArray);
   } catch (error) {
@@ -55,10 +57,14 @@ export async function updateShiftRestSchedule(req: Request, res: Response) {
   try {
     const data: IEmployee = req.body;
 
-    if (!data) res.status(400).send();
+    console.log(data)
+
+    if (data.storeCode === "" || data.userLogin === "")
+      return res
+        .status(400)
+        .json({ message: "Usuário ou código da loja não identificado" });
 
     const update = await updateEmployee(data);
-
 
     if (update.success) {
       return res.status(200).json({ message: update.message });

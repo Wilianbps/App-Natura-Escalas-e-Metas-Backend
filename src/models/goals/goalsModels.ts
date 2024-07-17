@@ -43,3 +43,27 @@ export async function selectGoalsByDate(month: string, year: string) {
     console.log("Conexão fechada");
   }
 }
+
+export async function selectGoalsByWeek(storeCode: string, initialDate: string, lastDate: string){
+  const pool = await connection.openConnection();
+
+  try {
+    const query = `SELECT SUM(META_VALOR) AS goalValue, META_TIPO AS goalType FROM W_DGCS_CONSULTA_METAS 
+                  WHERE CODIGO_LOJA = '${storeCode}' AND DATA BETWEEN '${initialDate}' AND '${lastDate}'
+                  GROUP BY META_TIPO`;
+
+    const goals = await pool.request().query(query);
+
+    return goals.recordset;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection(pool);
+    console.log("Conexão fechada");
+  }
+}
