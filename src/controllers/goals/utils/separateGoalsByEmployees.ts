@@ -106,7 +106,7 @@ export function separateGoalsByEmployees(
 
       goals.forEach((item) => {
         const date = new Date(item.date);
-        console.log("Date", date); // Verifique se as datas são válidas
+        
         let dayOfWeek = getDay(date) + 1;
 
         if (dayOfWeek === 8) {

@@ -3,10 +3,13 @@ import {
   selectGoalsByDate,
   selectGoalsByDateOrderById,
   selectGoalsByWeek,
+  selectGoalsEmployeesByMonth,
+  selectRankingGoalsLastTwelveMonths,
 } from "../../models/goals/goalsModels";
 import { splitsArrayIntoTwoParts } from "./utils/splitsArrayIntoTwoParts";
 import { addDaysOfMonthIntoArrays } from "./utils/addDaysOfMonthIntoArrays";
 import { separateGoalsByEmployees } from "./utils/separateGoalsByEmployees";
+import { calculateGoalMonthByEmployee } from "./utils/calculateGoalMonthByEmployee";
 
 interface IGoals {
   id: string;
@@ -32,13 +35,12 @@ interface IGoalsByWeek {
 
 export async function findGoalsByFortnight(req: Request, res: Response) {
   try {
-    const { month, year } = req.query;
+    const { storeCode, month, year } = req.query;
 
-    console.log(month, year);
-
-    if (!month || !year) return res.status(400).send();
+    if (!storeCode || !month || !year) return res.status(400).send();
 
     const goals = await selectGoalsByDateOrderById(
+      storeCode.toString(),
       month.toString(),
       year.toString()
     );
@@ -60,11 +62,15 @@ export async function findGoalsByFortnight(req: Request, res: Response) {
 
 export async function findGoalsByWeek(req: Request, res: Response) {
   try {
-    const { month, year } = req.query;
+    const { storeCode, month, year } = req.query;
 
-    if (!month || !year) return res.status(400).send();
+    if (!storeCode || !month || !year) return res.status(400).send();
 
-    const goals = await selectGoalsByDate(month.toString(), year.toString());
+    const goals = await selectGoalsByDate(
+      storeCode.toString(),
+      month.toString(),
+      year.toString()
+    );
 
     const goalsByWeek = separateGoalsByEmployees(
       goals as IGoalsByWeek[],
@@ -83,12 +89,7 @@ export async function findGoalsByMonth(req: Request, res: Response) {
   try {
     const { storeCode, initialDate, lastDate } = req.query;
 
-    if (!storeCode || !initialDate || !lastDate)
-      return res.status(400).send();
-
-    console.log(storeCode);
-    console.log(initialDate);
-    console.log(lastDate);
+    if (!storeCode || !initialDate || !lastDate) return res.status(400).send();
 
     const goals = await selectGoalsByWeek(
       storeCode.toString(),
@@ -96,13 +97,56 @@ export async function findGoalsByMonth(req: Request, res: Response) {
       lastDate.toString()
     );
 
- /*    if (goals.length === 0){
-      return res.status(404).send();
-    } */
-
-   res.status(200).json(goals);
+    res.status(200).json(goals);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
   }
+}
+
+export async function findGoalsEmployeesByMonth(req: Request, res: Response) {
+  try {
+    const { storeCode, month, year } = req.query;
+
+    if (!storeCode || !month || !year) return res.status(400).send();
+
+    const goals = await selectGoalsEmployeesByMonth(
+      storeCode.toString(),
+      month.toString(),
+      year.toString()
+    );
+
+    const result = calculateGoalMonthByEmployee(goals)
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function findRankingGoalsLastTwelveMonths(req: Request, res: Response){
+
+  try {
+    const { storeCode, initialDate, lastDate } = req.query;
+
+    if (!storeCode || !initialDate || !lastDate) return res.status(400).send();
+
+    console.log(initialDate)
+
+    console.log(lastDate)
+
+
+    const goalsLastTwelveMonths = await selectRankingGoalsLastTwelveMonths(
+      storeCode.toString(),
+      initialDate.toString(),
+      lastDate.toString()
+    );
+
+    res.status(200).json(goalsLastTwelveMonths);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+
 }

@@ -73,13 +73,9 @@ export async function findInputFlow(req: Request, res: Response) {
   try {
     const { date, codeStore } = req.query;
 
-    console.log(date)
-
     if (!date || !codeStore) return res.status(400).end();
 
     const result = await SelectInputFlow(date as string, codeStore as string)
-
-    console.log(typeof date);
 
     res.status(200).json(result)
   } catch (error) {

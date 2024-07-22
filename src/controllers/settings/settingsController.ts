@@ -57,8 +57,6 @@ export async function updateShiftRestSchedule(req: Request, res: Response) {
   try {
     const data: IEmployee = req.body;
 
-    console.log(data)
-
     if (data.storeCode === "" || data.userLogin === "")
       return res
         .status(400)
