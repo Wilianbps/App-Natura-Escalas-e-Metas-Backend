@@ -140,7 +140,6 @@ export async function findRankingGoalsLastTwelveMonths(req: Request, res: Respon
     const goalsLastTwelveMonths = await selectRankingGoalsLastTwelveMonths(
       storeCode.toString(),
       initialDate.toString(),
-      lastDate.toString()
     );
 
     res.status(200).json(goalsLastTwelveMonths);

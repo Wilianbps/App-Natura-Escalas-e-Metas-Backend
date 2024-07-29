@@ -40,7 +40,7 @@ ORDER BY
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -62,7 +62,7 @@ export async function selectScaleSummary(month: string, year: string) {
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -111,7 +111,7 @@ export async function updateScale(scales: IScale[]) {
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -144,7 +144,7 @@ export async function SelectInputFlow(date: string, codeStore: string) {
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -170,7 +170,7 @@ export async function executeProcToLoadMonthScale(date: string){
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }

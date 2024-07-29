@@ -16,7 +16,7 @@ export async function findAllEmployees() {
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -57,7 +57,7 @@ export async function updateSettings(settings: ISettings) {
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -199,7 +199,7 @@ export async function updateEmployee(
       }
       throw error;
     } finally {
-      await connection.closeConnection(pool);
+      await connection.closeConnection();
       console.log("Conexão fechada");
     }
   });

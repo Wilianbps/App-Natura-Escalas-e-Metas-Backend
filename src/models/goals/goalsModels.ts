@@ -7,9 +7,9 @@ export async function selectGoalsByDateOrderById(
   month: string,
   year: string
 ) {
-  const pool = await connection.openConnection();
-
+  
   try {
+    const pool = await connection.openConnection();
     const query = `SELECT ID_VENDEDOR_LINX AS id, CODIGO_LOJA AS codeStore, NOME_VENDEDOR AS name, DATA AS date, META_DIA_LOJA AS goalDay, META_DIARIA_POR_VENDEDOR AS goalDayByEmployee FROM W_DGCS_METAS_VENDEDORES_ATIVOS WHERE CODIGO_LOJA = '${storeCode}' AND MONTH(DATA) = '${month}' AND YEAR(DATA) = '${year}' ORDER BY ID_VENDEDOR_LINX`;
 
     const goals = await pool.request().query(query);
@@ -22,8 +22,9 @@ export async function selectGoalsByDateOrderById(
       console.log("Erro desconhecido ao executar a consulta");
     }
     throw error;
+    
   } finally {
-    await connection.closeConnection(pool);
+
     console.log("Conexão fechada");
   }
 }
@@ -49,7 +50,7 @@ export async function selectGoalsByDate(
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -77,7 +78,7 @@ export async function selectGoalsByWeek(
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
@@ -103,89 +104,60 @@ export async function selectGoalsEmployeesByMonth(
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
 
-export async function selectRankingGoalsLastTwelveMonths(
-  storeCode: string,
-  initialDate: string,
-  lastDate: string
-) {
-
-  const months = [
-    "Jan",
-    "Fev",
-    "Mar",
-    "Abr",
-    "Mai",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Set",
-    "Out",
-    "Nov",
-    "Dez",
-  ];
- const pool = await connection.openConnection(); // Abre a conexão
-  try {  
-
-    const results = [];
-
-    // Converter lastDate para um objeto Date
+export async function selectRankingGoalsLastTwelveMonths(storeCode: string, lastDate: string) {
+  const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const pool = await connection.openConnection();
+  
+  try {
     const endDate = new Date(
-      parseInt(lastDate.slice(0, 4)), // Ano
-      parseInt(lastDate.slice(4, 6)) - 1, // Mês (subtrai 1 pois os meses em JavaScript são zero-indexed)
-      parseInt(lastDate.slice(6, 8)) // Dia
+      parseInt(lastDate.slice(0, 4)), 
+      parseInt(lastDate.slice(4, 6)) - 1, 
+      parseInt(lastDate.slice(6, 8))
     );
 
-    // Iterar retrocedendo 12 meses a partir do mês de endDate
-    for (let i = 0; i < 12; i++) {
-      // Calcular o início e o fim do mês retrocedendo i meses a partir do endDate
-      const startDateCalc = subMonths(endDate, i);
-      const startDateFormatted = format(
-        startOfMonth(startDateCalc),
-        "yyyy-MM-dd"
-      );
-      const endDateFormatted = format(endOfMonth(startDateCalc), "yyyy-MM-dd");
-      const monthIndex = startDateCalc.getMonth();
-      const year = startDateCalc.getFullYear();
+    const results = await Promise.all(
+      Array.from({ length: 12 }, (_, i) => {
+        const startDateCalc = subMonths(endDate, i);
+        const startDateFormatted = format(startOfMonth(startDateCalc), "yyyy-MM-dd");
+        const endDateFormatted = format(endOfMonth(startDateCalc), "yyyy-MM-dd");
+        const monthIndex = startDateCalc.getMonth();
+        const year = startDateCalc.getFullYear();
+        
+        const query = `
+          SELECT SUM(META_VALOR) AS goalValue, META_TIPO AS goalType
+          FROM W_DGCS_CONSULTA_METAS
+          WHERE CODIGO_LOJA = @storeCode AND DATA BETWEEN @startDate AND @endDate
+          GROUP BY META_TIPO
+        `;
 
-      const query = `
-        SELECT SUM(META_VALOR) AS goalValue, META_TIPO AS goalType
-        FROM W_DGCS_CONSULTA_METAS
-        WHERE CODIGO_LOJA = ${storeCode} AND DATA BETWEEN @startDate AND @endDate
-        GROUP BY META_TIPO
-      `;
+        const request = pool.request();
+        request.input("storeCode", sql.VarChar, storeCode);
+        request.input("startDate", sql.Date, startDateFormatted);
+        request.input("endDate", sql.Date, endDateFormatted);
 
-      const request = pool.request();
-      request.input("storeCode", sql.VarChar, storeCode);
-      request.input("startDate", sql.Date, startDateFormatted);
-      request.input("endDate", sql.Date, endDateFormatted);
+        return request.query(query).then(result => {
+          const monthData = {
+            name: `${months[monthIndex]}-${year}`,
+            hiperMeta: 0,
+            superMeta: 0,
+            meta: 0,
+          };
 
-      const result = await request.query(query);
+          result.recordset.forEach(record => {
+            if (record.goalType === "HIPER_META") monthData.hiperMeta = record.goalValue;
+            if (record.goalType === "SUPER_META") monthData.superMeta = record.goalValue;
+            if (record.goalType === "META") monthData.meta = record.goalValue;
+          });
 
-      const monthData = {
-        name: `${months[monthIndex]}-${year}`, // Nome do mês abreviado
-        hiperMeta: 0,
-        superMeta: 0,
-        meta: 0,
-      };
-
-      // Preenche o objeto com os valores retornados
-      result.recordset.forEach((record) => {
-        if (record.goalType === "HIPER_META") {
-          monthData.hiperMeta = record.goalValue;
-        } else if (record.goalType === "SUPER_META") {
-          monthData.superMeta = record.goalValue;
-        } else if (record.goalType === "META") {
-          monthData.meta = record.goalValue;
-        }
-      });
-
-      results.push(monthData);
-    }
+          return monthData;
+        });
+      })
+    );
 
     return results.reverse();
   } catch (error) {
@@ -196,8 +168,7 @@ export async function selectRankingGoalsLastTwelveMonths(
     }
     throw error;
   } finally {
-    await connection.closeConnection(pool);
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
-
