@@ -148,3 +148,29 @@ export async function SelectInputFlow(date: string, codeStore: string) {
     console.log("Conexão fechada");
   }
 }
+
+export async function executeProcToLoadMonthScale(date: string){
+  const pool = await connection.openConnection();
+
+  try {
+    console.log("data no model", date)
+
+    const query = `SP_DGCS_PREENCHER_ESCALA '${date}'`;
+
+
+
+    const monthScale = (await pool.request().query(query)).recordset;
+
+    return monthScale;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection(pool);
+    console.log("Conexão fechada");
+  }
+}

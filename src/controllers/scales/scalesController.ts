@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  executeProcToLoadMonthScale,
   SelectInputFlow,
   selectScaleByDate,
   selectScaleSummary,
@@ -8,6 +9,24 @@ import {
 import { transformedScale } from "../../models/scales/utils/transformedScale";
 import { separateScaleByWeek } from "./utils/separateScaleByWeek";
 import { removeDuplicateObject } from "./utils/removeDuplicateObject";
+
+
+export async function loadMonthScale(req: Request, res: Response){
+  try {
+    const { date } = req.query;
+
+    console.log("data no controller", date)
+
+    if (!date) return res.status(400).send();
+
+   await executeProcToLoadMonthScale(date as string);
+
+    res.status(200).send();
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
 
 export async function findScaleByDate(req: Request, res: Response) {
   try {
