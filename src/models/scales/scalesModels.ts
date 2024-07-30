@@ -127,7 +127,7 @@ export async function SelectInputFlow(date: string, codeStore: string) {
 
     const inputFlow = (await pool.request().query(query)).recordset;
 
-    inputFlow.forEach(obj => {
+    inputFlow.forEach((obj) => {
       for (let key in obj) {
         if (obj[key] === null) {
           obj[key] = 0;
@@ -149,19 +149,72 @@ export async function SelectInputFlow(date: string, codeStore: string) {
   }
 }
 
-export async function executeProcToLoadMonthScale(date: string){
+export async function executeProcToLoadMonthScale(storeCode: string, loginUser: string, date: string, currentDate: string, finished: number) {
   const pool = await connection.openConnection();
 
   try {
-    console.log("data no model", date)
-
     const query = `SP_DGCS_PREENCHER_ESCALA '${date}'`;
 
+    await pool.request().query(query);
+  
+      const insertQuery = `
+        INSERT INTO ESCALA_FINALIZADA (CODIGO_LOJA, LOGIN_USUARIO, DATA_ESCALA_INICIO, FINALIZADA)
+        VALUES ('${storeCode}', '${loginUser}', '${currentDate}', ${finished})
+      `;
 
+      await pool.request().query(insertQuery);
+      console.log("Dados inseridos com sucesso");
+    
 
-    const monthScale = (await pool.request().query(query)).recordset;
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta: ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
 
-    return monthScale;
+export async function SelectFinishedScaleByMonth(month: number, year: number) {
+  const pool = await connection.openConnection();
+
+  try {
+
+    const query = `SELECT CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS loginUser, DATA_ESCALA_INICIO AS startDate, 
+    DATA_ESCALA_FIM AS endDate, FINALIZADA AS finished FROM ESCALA_FINALIZADA 
+    WHERE DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month} AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
+
+    const result = (await pool.request().query(query)).recordset;
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function updateFinishedScale(storeCode: string, month: number, year: number, endScaleDate: string){
+  const pool = await connection.openConnection();
+
+  try {
+    const query = `UPDATE ESCALA_FINALIZADA SET DATA_ESCALA_FIM = '${endScaleDate}', FINALIZADA = 1 WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month}
+  AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
+
+    await pool.request().query(query);
+
+    return true;
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);

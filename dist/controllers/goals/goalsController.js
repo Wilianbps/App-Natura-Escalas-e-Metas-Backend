@@ -91,7 +91,7 @@ function findRankingGoalsLastTwelveMonths(req, res) {
                 return res.status(400).send();
             console.log(initialDate);
             console.log(lastDate);
-            const goalsLastTwelveMonths = yield (0, goalsModels_1.selectRankingGoalsLastTwelveMonths)(storeCode.toString(), initialDate.toString(), lastDate.toString());
+            const goalsLastTwelveMonths = yield (0, goalsModels_1.selectRankingGoalsLastTwelveMonths)(storeCode.toString(), initialDate.toString());
             res.status(200).json(goalsLastTwelveMonths);
         }
         catch (error) {

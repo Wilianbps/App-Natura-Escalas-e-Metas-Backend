@@ -1,32 +1,16 @@
 import { Request, Response } from "express";
 import {
   executeProcToLoadMonthScale,
+  SelectFinishedScaleByMonth,
   SelectInputFlow,
   selectScaleByDate,
   selectScaleSummary,
+  updateFinishedScale,
   updateScale,
 } from "../../models/scales/scalesModels";
 import { transformedScale } from "../../models/scales/utils/transformedScale";
 import { separateScaleByWeek } from "./utils/separateScaleByWeek";
 import { removeDuplicateObject } from "./utils/removeDuplicateObject";
-
-
-export async function loadMonthScale(req: Request, res: Response){
-  try {
-    const { date } = req.query;
-
-    console.log("data no controller", date)
-
-    if (!date) return res.status(400).send();
-
-   await executeProcToLoadMonthScale(date as string);
-
-    res.status(200).send();
-  } catch (error) {
-    console.log(error, "erro na solicitação");
-    return res.status(500).end();
-  }
-}
 
 export async function findScaleByDate(req: Request, res: Response) {
   try {
@@ -94,9 +78,79 @@ export async function findInputFlow(req: Request, res: Response) {
 
     if (!date || !codeStore) return res.status(400).end();
 
-    const result = await SelectInputFlow(date as string, codeStore as string)
+    const result = await SelectInputFlow(date as string, codeStore as string);
 
-    res.status(200).json(result)
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function loadMonthScale(req: Request, res: Response) {
+  try {
+    const { storeCode, loginUser, date, currentDate, finished } = req.query;
+
+    if (!storeCode || !loginUser || !date || !finished)
+      return res.status(400).send();
+
+    const success = await executeProcToLoadMonthScale(
+      storeCode as string,
+      loginUser as string,
+      date as string,
+      currentDate as string,
+      Number(finished)
+    );
+
+    if (success) {
+      res.status(200).send();
+    } else {
+      res.status(400).json({ message: "Não foi possível carregar a escala" });
+    }
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function findFinishedScaleByMonth(req: Request, res: Response) {
+  try {
+    const { month, year } = req.query;
+
+    if (!month || !year) return res.status(400).send();
+
+    const result = await SelectFinishedScaleByMonth(
+      Number(month),
+      Number(year)
+    );
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function updateFinishedScaleByMonth(req: Request, res: Response) {
+  try {
+    const { storeCode, month, year, endScaleDate } = req.query;
+
+    if (!storeCode || !month || !year || !endScaleDate)
+      return res.status(400).send();
+
+    const success = await updateFinishedScale(
+      storeCode as string,
+      Number(month),
+      Number(year),
+      endScaleDate as string
+    );
+
+    if (success) {
+      res.status(200).send();
+    } else {
+      res.status(400).json({ message: "Não foi possível atualizar a escala como finalizada" });
+    }
+
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

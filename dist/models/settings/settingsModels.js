@@ -32,7 +32,7 @@ function findAllEmployees() {
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
@@ -72,7 +72,7 @@ function updateSettings(settings) {
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
@@ -197,7 +197,7 @@ function updateEmployee(employee) {
                 throw error;
             }
             finally {
-                yield connection_1.default.closeConnection(pool);
+                yield connection_1.default.closeConnection();
                 console.log("Conexão fechada");
             }
         }));

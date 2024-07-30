@@ -54,7 +54,7 @@ ORDER BY
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
@@ -78,7 +78,7 @@ function selectScaleSummary(month, year) {
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
@@ -127,7 +127,7 @@ function updateScale(scales) {
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
@@ -161,7 +161,7 @@ function SelectInputFlow(date, codeStore) {
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
@@ -186,7 +186,7 @@ function executeProcToLoadMonthScale(date) {
             throw error;
         }
         finally {
-            yield connection_1.default.closeConnection(pool);
+            yield connection_1.default.closeConnection();
             console.log("Conexão fechada");
         }
     });
