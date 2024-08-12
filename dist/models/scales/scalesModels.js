@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.executeProcToLoadMonthScale = exports.SelectInputFlow = exports.updateScale = exports.selectScaleSummary = exports.selectScaleByDate = void 0;
+exports.updateFinishedScale = exports.SelectFinishedScaleByMonth = exports.executeProcToLoadMonthScale = exports.SelectInputFlow = exports.updateScale = exports.selectScaleSummary = exports.selectScaleByDate = void 0;
 const connection_1 = __importDefault(require("../Connection/connection"));
 function selectScaleByDate(date) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -142,7 +142,7 @@ function SelectInputFlow(date, codeStore) {
       ,[HR_ID36] ,[HR_ID37] ,[HR_ID38] ,[HR_ID39] ,[HR_ID40] ,[HR_ID41] ,[HR_ID42],[HR_ID43] FROM W_DGCS_FLUXO_ENTRADA_DATA 
       WHERE DATA = '${date}' AND CODIGO_LOJA = '${codeStore}'`;
             const inputFlow = (yield pool.request().query(query)).recordset;
-            inputFlow.forEach(obj => {
+            inputFlow.forEach((obj) => {
                 for (let key in obj) {
                     if (obj[key] === null) {
                         obj[key] = 0;
@@ -167,14 +167,45 @@ function SelectInputFlow(date, codeStore) {
     });
 }
 exports.SelectInputFlow = SelectInputFlow;
-function executeProcToLoadMonthScale(date) {
+function executeProcToLoadMonthScale(storeCode, loginUser, date, currentDate, finished) {
     return __awaiter(this, void 0, void 0, function* () {
         const pool = yield connection_1.default.openConnection();
         try {
-            console.log("data no model", date);
             const query = `SP_DGCS_PREENCHER_ESCALA '${date}'`;
-            const monthScale = (yield pool.request().query(query)).recordset;
-            return monthScale;
+            yield pool.request().query(query);
+            const insertQuery = `
+        INSERT INTO ESCALA_FINALIZADA (CODIGO_LOJA, LOGIN_USUARIO, DATA_ESCALA_INICIO, FINALIZADA)
+        VALUES ('${storeCode}', '${loginUser}', '${currentDate}', ${finished})
+      `;
+            yield pool.request().query(insertQuery);
+            console.log("Dados inseridos com sucesso");
+            return true;
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                console.log(`Erro ao executar a consulta: ${error.message}`);
+            }
+            else {
+                console.log("Erro desconhecido ao executar a consulta");
+            }
+            throw error;
+        }
+        finally {
+            yield connection_1.default.closeConnection();
+            console.log("Conexão fechada");
+        }
+    });
+}
+exports.executeProcToLoadMonthScale = executeProcToLoadMonthScale;
+function SelectFinishedScaleByMonth(month, year) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pool = yield connection_1.default.openConnection();
+        try {
+            const query = `SELECT CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS loginUser, DATA_ESCALA_INICIO AS startDate, 
+    DATA_ESCALA_FIM AS endDate, FINALIZADA AS finished FROM ESCALA_FINALIZADA 
+    WHERE DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month} AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
+            const result = (yield pool.request().query(query)).recordset;
+            return result;
         }
         catch (error) {
             if (error instanceof Error) {
@@ -191,4 +222,29 @@ function executeProcToLoadMonthScale(date) {
         }
     });
 }
-exports.executeProcToLoadMonthScale = executeProcToLoadMonthScale;
+exports.SelectFinishedScaleByMonth = SelectFinishedScaleByMonth;
+function updateFinishedScale(storeCode, month, year, endScaleDate) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pool = yield connection_1.default.openConnection();
+        try {
+            const query = `UPDATE ESCALA_FINALIZADA SET DATA_ESCALA_FIM = '${endScaleDate}', FINALIZADA = 1 WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month}
+  AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
+            yield pool.request().query(query);
+            return true;
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                console.log(`Erro ao executar a consulta ${error.message}`);
+            }
+            else {
+                console.log("Erro desconhecido ao executar a consulta");
+            }
+            throw error;
+        }
+        finally {
+            yield connection_1.default.closeConnection();
+            console.log("Conexão fechada");
+        }
+    });
+}
+exports.updateFinishedScale = updateFinishedScale;

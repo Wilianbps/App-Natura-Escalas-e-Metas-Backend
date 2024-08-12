@@ -4,6 +4,7 @@ interface IGoals {
   id: string;
   name: string;
   codeStore: string;
+  activeSeller: number;
   date: string;
   goalDay: number;
   goalDayByEmployee: number;
@@ -51,6 +52,7 @@ export function splitsArrayIntoTwoParts(goals: IGoals[]) {
         id: item.id,
         name: item.name,
         codeStore: item.codeStore,
+        activeSeller: item.activeSeller === 0 ? false : true,
         sumGoalDayByEmployee: item.goalDayByEmployee,
         days: [],
       });

@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import {
   executeProcToLoadMonthScale,
+  insertInTableScaleApproval,
   SelectFinishedScaleByMonth,
   SelectInputFlow,
+  selectScaleApprovalRequest,
   selectScaleByDate,
   selectScaleSummary,
   updateFinishedScale,
@@ -11,14 +13,15 @@ import {
 import { transformedScale } from "../../models/scales/utils/transformedScale";
 import { separateScaleByWeek } from "./utils/separateScaleByWeek";
 import { removeDuplicateObject } from "./utils/removeDuplicateObject";
+import { IScaleApproval } from "src/models/scales/scales";
 
 export async function findScaleByDate(req: Request, res: Response) {
   try {
-    const { date } = req.query;
+    const { date, storeCode } = req.query;
 
-    if (!date) return res.status(400).send();
+    if (!date || !storeCode) return res.status(400).send();
 
-    const scale = await selectScaleByDate(date as string);
+    const scale = await selectScaleByDate(date as string, storeCode as string);
 
     const result = transformedScale(scale);
 
@@ -148,9 +151,47 @@ export async function updateFinishedScaleByMonth(req: Request, res: Response) {
     if (success) {
       res.status(200).send();
     } else {
-      res.status(400).json({ message: "Não foi possível atualizar a escala como finalizada" });
+      res.status(400).json({
+        message: "Não foi possível atualizar a escala como finalizada",
+      });
     }
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
 
+export async function postScaleApprovalRequest(req: Request, res: Response) {
+  try {
+    const data: IScaleApproval = req.body;
+
+    if (!data) return res.status(400).send();
+
+    const success = await insertInTableScaleApproval(data);
+
+    if (success) {
+      res.status(200).send();
+    } else {
+      res.status(400).json({
+        message: "Não foi possível inserir na tabela",
+      });
+    }
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function findScaleApprovalRequest(req: Request, res: Response) {
+  try {
+
+    const {month, year} = req.query
+
+    if (!month || !year) return res.status(400).send();
+
+    const result = await selectScaleApprovalRequest(Number(month), Number(year));
+
+    res.status(200).json(result);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

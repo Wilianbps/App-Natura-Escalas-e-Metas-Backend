@@ -10,9 +10,16 @@ import { addDayOffInArray } from "./libs/addDayOffInArray";
 import { addVacationInArray } from "./libs/addVacationInArray";
 import { filterDayOffAndVacation } from "./libs/filterDayOffAndVacation";
 
-export async function getAllEmployees(_req: Request, res: Response) {
+export async function getAllEmployees(req: Request, res: Response) {
   try {
-    const employees: IEmployee[] = await findAllEmployees();
+    const { storeCode } = req.query;
+
+    console.log("storeCode employyes", storeCode);
+
+    if (!storeCode) return res.status(404).send();
+
+    const employees: IEmployee[] = await findAllEmployees(storeCode as string);
+
     employees.map((employee) => (employee.idSeler === 1 ? true : false));
 
     addDayOffInArray(employees);
@@ -38,10 +45,11 @@ export async function updateStatusAndScaleFlowSettings(
 ) {
   try {
     const data = req.body;
+    const { storeCode } = req.query;
 
-    if (!data) return res.status(400).end();
+    if (!data || !storeCode) return res.status(400).end();
 
-    const settings = await updateSettings(data);
+    const settings = await updateSettings(data, storeCode as string);
 
     if (settings.success) {
       res.status(200).json({ message: "Alteração feita com sucesso." });
@@ -56,13 +64,16 @@ export async function updateStatusAndScaleFlowSettings(
 export async function updateShiftRestSchedule(req: Request, res: Response) {
   try {
     const data: IEmployee = req.body;
+    const { storeCode } = req.query;
 
-    if (data.storeCode === "" || data.userLogin === "")
+    console.log("opa wil, chegou aqui tbm no upadateSettings", storeCode)
+
+    if (data.storeCode === "" || data.userLogin === "" || !storeCode)
       return res
         .status(400)
         .json({ message: "Usuário ou código da loja não identificado" });
 
-    const update = await updateEmployee(data);
+    const update = await updateEmployee(data, storeCode as string);
 
     if (update.success) {
       return res.status(200).json({ message: update.message });

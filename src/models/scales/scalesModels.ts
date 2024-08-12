@@ -1,7 +1,7 @@
 import connection from "../Connection/connection";
-import { IScale } from "./scales";
+import { IScale, IScaleApproval } from "./scales";
 
-export async function selectScaleByDate(date: string) {
+export async function selectScaleByDate(date: string, storeCode: string) {
   const pool = await connection.openConnection();
 
   try {
@@ -17,7 +17,7 @@ export async function selectScaleByDate(date: string) {
 FROM 
     W_DGCS_CONSULTA_ESCALAS 
 WHERE 
-    CAST(DATA_ESCALA AS DATE) = '${date}' 
+    CAST(DATA_ESCALA AS DATE) = '${date}' AND CODIGO_LOJA = '${storeCode}'
 ORDER BY 
     CASE 
         WHEN STATUS = 0 THEN 1  -- Coloca STATUS 0 por último
@@ -149,22 +149,27 @@ export async function SelectInputFlow(date: string, codeStore: string) {
   }
 }
 
-export async function executeProcToLoadMonthScale(storeCode: string, loginUser: string, date: string, currentDate: string, finished: number) {
+export async function executeProcToLoadMonthScale(
+  storeCode: string,
+  loginUser: string,
+  date: string,
+  currentDate: string,
+  finished: number
+) {
   const pool = await connection.openConnection();
 
   try {
-    const query = `SP_DGCS_PREENCHER_ESCALA '${date}'`;
+    const query = `SP_DGCS_PREENCHER_ESCALA '${date}', '${loginUser}'`;
 
     await pool.request().query(query);
-  
-      const insertQuery = `
+
+    const insertQuery = `
         INSERT INTO ESCALA_FINALIZADA (CODIGO_LOJA, LOGIN_USUARIO, DATA_ESCALA_INICIO, FINALIZADA)
         VALUES ('${storeCode}', '${loginUser}', '${currentDate}', ${finished})
       `;
 
-      await pool.request().query(insertQuery);
-      console.log("Dados inseridos com sucesso");
-    
+    await pool.request().query(insertQuery);
+    console.log("Dados inseridos com sucesso");
 
     return true;
   } catch (error) {
@@ -184,7 +189,6 @@ export async function SelectFinishedScaleByMonth(month: number, year: number) {
   const pool = await connection.openConnection();
 
   try {
-
     const query = `SELECT CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS loginUser, DATA_ESCALA_INICIO AS startDate, 
     DATA_ESCALA_FIM AS endDate, FINALIZADA AS finished FROM ESCALA_FINALIZADA 
     WHERE DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month} AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
@@ -205,7 +209,12 @@ export async function SelectFinishedScaleByMonth(month: number, year: number) {
   }
 }
 
-export async function updateFinishedScale(storeCode: string, month: number, year: number, endScaleDate: string){
+export async function updateFinishedScale(
+  storeCode: string,
+  month: number,
+  year: number,
+  endScaleDate: string
+) {
   const pool = await connection.openConnection();
 
   try {
@@ -215,6 +224,52 @@ export async function updateFinishedScale(storeCode: string, month: number, year
     await pool.request().query(query);
 
     return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function insertInTableScaleApproval(data: IScaleApproval) {
+  const pool = await connection.openConnection();
+
+  try {
+    const insert = `INSERT INTO APROVACAO_ESCALA (DESCRICAO, RESPONSAVEL, CODIGO_LOJA, FILIAL, DATA_SOLICITACAO, [STATUS]) VALUES ('${data.description}', '${data.responsible}', '${data.storeCode}', '${data.branch}', '${data.requestDate}', ${data.status})`;
+
+    await pool.request().query(insert);
+
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function selectScaleApprovalRequest(month: number, year: number,) {
+  const pool = await connection.openConnection();
+
+  try {
+    const query = `SELECT TOP 1 DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
+    DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
+    WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+
+    const result = (await pool.request().query(query)).recordset;
+
+    return result;
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);

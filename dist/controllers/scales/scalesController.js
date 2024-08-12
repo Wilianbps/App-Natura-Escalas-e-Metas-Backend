@@ -9,28 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.findInputFlow = exports.updateScaleByDate = exports.findScaleSummary = exports.findScaleByDate = exports.loadMonthScale = void 0;
+exports.updateFinishedScaleByMonth = exports.findFinishedScaleByMonth = exports.loadMonthScale = exports.findInputFlow = exports.updateScaleByDate = exports.findScaleSummary = exports.findScaleByDate = void 0;
 const scalesModels_1 = require("../../models/scales/scalesModels");
 const transformedScale_1 = require("../../models/scales/utils/transformedScale");
 const separateScaleByWeek_1 = require("./utils/separateScaleByWeek");
 const removeDuplicateObject_1 = require("./utils/removeDuplicateObject");
-function loadMonthScale(req, res) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { date } = req.query;
-            console.log("data no controller", date);
-            if (!date)
-                return res.status(400).send();
-            yield (0, scalesModels_1.executeProcToLoadMonthScale)(date);
-            res.status(200).send();
-        }
-        catch (error) {
-            console.log(error, "erro na solicitação");
-            return res.status(500).end();
-        }
-    });
-}
-exports.loadMonthScale = loadMonthScale;
 function findScaleByDate(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -101,3 +84,61 @@ function findInputFlow(req, res) {
     });
 }
 exports.findInputFlow = findInputFlow;
+function loadMonthScale(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { storeCode, loginUser, date, currentDate, finished } = req.query;
+            if (!storeCode || !loginUser || !date || !finished)
+                return res.status(400).send();
+            const success = yield (0, scalesModels_1.executeProcToLoadMonthScale)(storeCode, loginUser, date, currentDate, Number(finished));
+            if (success) {
+                res.status(200).send();
+            }
+            else {
+                res.status(400).json({ message: "Não foi possível carregar a escala" });
+            }
+        }
+        catch (error) {
+            console.log(error, "erro na solicitação");
+            return res.status(500).end();
+        }
+    });
+}
+exports.loadMonthScale = loadMonthScale;
+function findFinishedScaleByMonth(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { month, year } = req.query;
+            if (!month || !year)
+                return res.status(400).send();
+            const result = yield (0, scalesModels_1.SelectFinishedScaleByMonth)(Number(month), Number(year));
+            res.status(200).json(result);
+        }
+        catch (error) {
+            console.log(error, "erro na solicitação");
+            return res.status(500).end();
+        }
+    });
+}
+exports.findFinishedScaleByMonth = findFinishedScaleByMonth;
+function updateFinishedScaleByMonth(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { storeCode, month, year, endScaleDate } = req.query;
+            if (!storeCode || !month || !year || !endScaleDate)
+                return res.status(400).send();
+            const success = yield (0, scalesModels_1.updateFinishedScale)(storeCode, Number(month), Number(year), endScaleDate);
+            if (success) {
+                res.status(200).send();
+            }
+            else {
+                res.status(400).json({ message: "Não foi possível atualizar a escala como finalizada" });
+            }
+        }
+        catch (error) {
+            console.log(error, "erro na solicitação");
+            return res.status(500).end();
+        }
+    });
+}
+exports.updateFinishedScaleByMonth = updateFinishedScaleByMonth;
