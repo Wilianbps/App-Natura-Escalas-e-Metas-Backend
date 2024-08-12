@@ -1,11 +1,29 @@
 import connection from "../Connection/connection";
 import { IEmployee, ISettings } from "./settings";
 
+export async function execProcImportSellers() {
+  const pool = await connection.openConnection();
+  try {
+    await pool.request().execute("SP_DGCS_IMPORTAR_VENDEDORES");
+
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
 export async function findAllEmployees(storeCode: string) {
   const pool = await connection.openConnection();
   try {
-    const query =
-      `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, FLUXO_LOJA AS flowScale FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
+    const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, FLUXO_LOJA AS flowScale FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
     const employees = await pool.request().query(query);
     return employees.recordset;
   } catch (error) {
@@ -70,7 +88,6 @@ export async function updateEmployee(
 
   return new Promise(async (resolve, reject) => {
     try {
-
       //INÍCIO UPDATE DO TURNO
 
       const UpdateIdShift = `UPDATE LOJA_VENDEDOR SET ID_TURNOS = '${employee.idShift}' WHERE ID_VENDEDOR_LINX = '${employee.idSeler}' AND CODIGO_LOJA = '${storeCode}'`;
@@ -102,14 +119,14 @@ export async function updateEmployee(
       const arrayVacation = employee.arrayVacation;
 
       for (let i = 0; i < arrayVacation.length; i++) {
-        if (arrayVacation[i].type === "") continue
+        if (arrayVacation[i].type === "") continue;
 
-        if (arrayVacation[i].type === "I"){
-         const insertVacation = `INSERT INTO AUSENCIA_PROGRAMADA (CODIGO_LOJA, LOGIN_USUARIO, ID_VENDEDOR_LINX, DATA_INICIO, DATA_FIM, TIPO_AUSENCIA) values ('${employee.storeCode}', '${employee.userLogin}', '${employee.idSeler}', '${arrayVacation[i].startVacation}', '${arrayVacation[i].finishVacation}', 'FERIAS')`;
+        if (arrayVacation[i].type === "I") {
+          const insertVacation = `INSERT INTO AUSENCIA_PROGRAMADA (CODIGO_LOJA, LOGIN_USUARIO, ID_VENDEDOR_LINX, DATA_INICIO, DATA_FIM, TIPO_AUSENCIA) values ('${employee.storeCode}', '${employee.userLogin}', '${employee.idSeler}', '${arrayVacation[i].startVacation}', '${arrayVacation[i].finishVacation}', 'FERIAS')`;
           await pool.request().query(insertVacation);
         }
 
-        if (arrayVacation[i].type === "D"){
+        if (arrayVacation[i].type === "D") {
           const deleteVacation = `DELETE FROM AUSENCIA_PROGRAMADA WHERE ID = '${arrayVacation[i].id}' AND CODIGO_lOJA = '${storeCode}'`;
           await pool.request().query(deleteVacation);
         }

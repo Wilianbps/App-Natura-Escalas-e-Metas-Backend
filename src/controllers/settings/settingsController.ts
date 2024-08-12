@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+  execProcImportSellers,
   findAllEmployees,
   updateEmployee,
   updateSettings,
@@ -14,25 +15,31 @@ export async function getAllEmployees(req: Request, res: Response) {
   try {
     const { storeCode } = req.query;
 
-    console.log("storeCode employyes", storeCode);
-
     if (!storeCode) return res.status(404).send();
 
-    const employees: IEmployee[] = await findAllEmployees(storeCode as string);
+    const success = await execProcImportSellers();
 
-    employees.map((employee) => (employee.idSeler === 1 ? true : false));
+    if (success) {
+      const employees: IEmployee[] = await findAllEmployees(
+        storeCode as string
+      );
 
-    addDayOffInArray(employees);
+      employees.map((employee) => (employee.idSeler === 1 ? true : false));
 
-    addVacationInArray(employees);
+      addDayOffInArray(employees);
 
-    const employeesWithOutDuplicateObjects = removeDuplicateObject(employees);
+      addVacationInArray(employees);
 
-    const filterArray = filterDayOffAndVacation(
-      employeesWithOutDuplicateObjects
-    );
+      const employeesWithOutDuplicateObjects = removeDuplicateObject(employees);
 
-    return res.status(200).json(filterArray);
+      const filterArray = filterDayOffAndVacation(
+        employeesWithOutDuplicateObjects
+      );
+
+      return res.status(200).json(filterArray);
+    } else {
+      return res.status(400).end();
+    }
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(400).end();
@@ -65,8 +72,6 @@ export async function updateShiftRestSchedule(req: Request, res: Response) {
   try {
     const data: IEmployee = req.body;
     const { storeCode } = req.query;
-
-    console.log("opa wil, chegou aqui tbm no upadateSettings", storeCode)
 
     if (data.storeCode === "" || data.userLogin === "" || !storeCode)
       return res

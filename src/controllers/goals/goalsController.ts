@@ -10,6 +10,7 @@ import { splitsArrayIntoTwoParts } from "./utils/splitsArrayIntoTwoParts";
 import { addDaysOfMonthIntoArrays } from "./utils/addDaysOfMonthIntoArrays";
 import { separateGoalsByEmployees } from "./utils/separateGoalsByEmployees";
 import { calculateGoalMonthByEmployee } from "./utils/calculateGoalMonthByEmployee";
+import { execProcImportSellers } from "src/models/settings/settingsModels";
 
 interface IGoals {
   id: string;
@@ -116,7 +117,7 @@ export async function findGoalsEmployeesByMonth(req: Request, res: Response) {
       year.toString()
     );
 
-    const result = calculateGoalMonthByEmployee(goals)
+    const result = calculateGoalMonthByEmployee(goals);
 
     res.status(200).json(result);
   } catch (error) {
@@ -125,8 +126,10 @@ export async function findGoalsEmployeesByMonth(req: Request, res: Response) {
   }
 }
 
-export async function findRankingGoalsLastTwelveMonths(req: Request, res: Response){
-
+export async function findRankingGoalsLastTwelveMonths(
+  req: Request,
+  res: Response
+) {
   try {
     const { storeCode, initialDate, lastDate } = req.query;
 
@@ -134,7 +137,7 @@ export async function findRankingGoalsLastTwelveMonths(req: Request, res: Respon
 
     const goalsLastTwelveMonths = await selectRankingGoalsLastTwelveMonths(
       storeCode.toString(),
-      initialDate.toString(),
+      initialDate.toString()
     );
 
     res.status(200).json(goalsLastTwelveMonths);
@@ -142,5 +145,4 @@ export async function findRankingGoalsLastTwelveMonths(req: Request, res: Respon
     console.log(error, "erro na solicitação");
     return res.status(500).end();
   }
-
 }
