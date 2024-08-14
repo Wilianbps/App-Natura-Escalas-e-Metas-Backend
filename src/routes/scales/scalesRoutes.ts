@@ -9,6 +9,7 @@ import {
   updateFinishedScaleByMonth,
   postScaleApprovalRequest,
   findScaleApprovalRequest,
+  putScaleApprovalRequest,
 } from "../../controllers/scales/scalesController";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.get("/get-scales-approval-request", findScaleApprovalRequest);
 router.put("/update-scale-by-date", updateScaleByDate);
 router.put("/update-finished-scale", updateFinishedScaleByMonth);
 router.post("/post-scales-approval-request", postScaleApprovalRequest);
+router.put("/put-scales-approval-request", putScaleApprovalRequest);
 
 export default router;

@@ -259,7 +259,7 @@ export async function insertInTableScaleApproval(data: IScaleApproval) {
   }
 }
 
-export async function selectScaleApprovalRequest(month: number, year: number,) {
+export async function selectScaleApprovalRequest(month: number, year: number) {
   const pool = await connection.openConnection();
 
   try {
@@ -270,6 +270,35 @@ export async function selectScaleApprovalRequest(month: number, year: number,) {
     const result = (await pool.request().query(query)).recordset;
 
     return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function updateScaleApprovalRequest(
+  month: number,
+  year: number,
+  storeCode: string,
+  approvalDate: string,
+  status: number
+) {
+  const pool = await connection.openConnection();
+
+  try {
+    const update = `UPDATE APROVACAO_ESCALA SET DATA_APROVACAO = '${approvalDate}', STATUS = ${status} WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month}
+  AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year};`;
+
+    await pool.request().query(update);
+
+    return true;
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);

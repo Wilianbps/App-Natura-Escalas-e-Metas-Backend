@@ -9,6 +9,7 @@ import {
   selectScaleSummary,
   updateFinishedScale,
   updateScale,
+  updateScaleApprovalRequest,
 } from "../../models/scales/scalesModels";
 import { transformedScale } from "../../models/scales/utils/transformedScale";
 import { separateScaleByWeek } from "./utils/separateScaleByWeek";
@@ -184,14 +185,43 @@ export async function postScaleApprovalRequest(req: Request, res: Response) {
 
 export async function findScaleApprovalRequest(req: Request, res: Response) {
   try {
-
-    const {month, year} = req.query
+    const { month, year } = req.query;
 
     if (!month || !year) return res.status(400).send();
 
-    const result = await selectScaleApprovalRequest(Number(month), Number(year));
+    const result = await selectScaleApprovalRequest(
+      Number(month),
+      Number(year)
+    );
 
     res.status(200).json(result);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function putScaleApprovalRequest(req: Request, res: Response) {
+  try {
+    const { month, year, storeCode, approvalDate, status } = req.query;
+
+    if (!month || !year || !storeCode || !approvalDate || !status)
+      return res.status(400).send();
+
+    const success = await updateScaleApprovalRequest(
+      Number(month),
+      Number(year),
+      storeCode as string,
+      approvalDate as string,
+      Number(status)
+    );
+
+    if (success) {
+      res.status(200).send();
+    } else {
+      res.status(400).send();
+    }
+    
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
