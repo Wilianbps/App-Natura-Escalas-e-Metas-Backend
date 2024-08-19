@@ -1,4 +1,4 @@
- import { isBefore, parse } from "date-fns";
+import { isBefore, parse } from "date-fns";
 
 interface IGoals {
   id: string;
@@ -74,6 +74,9 @@ export function splitsArrayIntoTwoParts(goals: IGoals[]) {
         id: item.id,
         name: item.name,
         codeStore: item.codeStore,
+        activeSeller: item.activeSeller === 0 ? false : true,
+        sumGoalDayByEmployee: item.goalDayByEmployee,
+
         days: [],
       });
     }
@@ -91,13 +94,10 @@ export function splitsArrayIntoTwoParts(goals: IGoals[]) {
   mapArray1.forEach((value) => resultArray1.push(value));
   mapArray2.forEach((value) => resultArray2.push(value));
 
-
   data.push(resultArray1, resultArray2);
-
 
   return data;
 }
-
 
 /* import { isBefore, parse } from "date-fns";
 

@@ -9,9 +9,9 @@ const config = {
     trustServerCertificate: true,
   },
   pool: {
-    max: 40, // Número máximo de conexões no pool
-    min: 0,  // Número mínimo de conexões no pool
-    idleTimeoutMillis: 30000 // Tempo ocioso antes de fechar a conexão
+    max: 40, 
+    min: 0, 
+    idleTimeoutMillis: 30000 
   },
   connectionTimeout: 30000, // 30 segundos
   requestTimeout: 30000 // 30 segundos
