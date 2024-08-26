@@ -35,13 +35,14 @@ export async function findScaleByDate(req: Request, res: Response) {
 
 export async function findScaleSummary(req: Request, res: Response) {
   try {
-    const { month, year } = req.query;
+    const { month, year, storeCode } = req.query;
 
-    if (!month || !year) return res.status(400).send();
+    if (!month || !year || !storeCode) return res.status(400).send();
 
     const getScaleSummary = await selectScaleSummary(
-      month.toString(),
-      year.toString()
+      month as string,
+      year as string,
+      storeCode as string
     );
 
     const scaleSummaryByWeek = separateScaleByWeek(

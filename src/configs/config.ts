@@ -13,8 +13,8 @@ const config = {
     min: 0,  // Número mínimo de conexões no pool
     idleTimeoutMillis: 30000 // Tempo ocioso antes de fechar a conexão
   },
-  connectionTimeout: 30000, // 30 segundos
-  requestTimeout: 30000 // 30 segundos
+/*   connectionTimeout: 30000, */
+/*   requestTimeout: 60000 */
 };
 
 export default config;

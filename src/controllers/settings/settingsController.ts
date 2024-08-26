@@ -19,7 +19,7 @@ export async function getAllEmployees(req: Request, res: Response) {
 
     const success = await execProcImportSellers();
 
-    if (success) {
+    if (success){
       const employees: IEmployee[] = await findAllEmployees(
         storeCode as string
       );
@@ -37,9 +37,14 @@ export async function getAllEmployees(req: Request, res: Response) {
       );
 
       return res.status(200).json(filterArray);
-    } else {
-      return res.status(400).end();
+    }else{
+      return res.status(400).send();
     }
+    
+
+  
+     
+    
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(400).end();

@@ -4,9 +4,19 @@ import { IEmployee, ISettings } from "./settings";
 export async function execProcImportSellers() {
   const pool = await connection.openConnection();
   try {
-    await pool.request().execute("SP_DGCS_IMPORTAR_VENDEDORES");
+    // Executa a stored procedure e obtém o resultado
+    const result = await pool.request().execute("SP_DGCS_IMPORTAR_VENDEDORES");
 
-    return true;
+    // Verifica se a procedure foi bem-sucedida
+    // Aqui assumimos que se o returnValue for 0, significa sucesso
+    if (result.returnValue === 0) {
+      return true;
+    } else {
+      console.log(
+        `A procedure retornou um valor diferente de 0: ${result.returnValue}`
+      );
+      return false;
+    }
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);
@@ -23,7 +33,10 @@ export async function execProcImportSellers() {
 export async function findAllEmployees(storeCode: string) {
   const pool = await connection.openConnection();
   try {
-    const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, FLUXO_LOJA AS flowScale FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
+    const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, 
+    NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, 
+    AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, FLUXO_LOJA AS flowScale 
+    FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
     const employees = await pool.request().query(query);
     return employees.recordset;
   } catch (error) {
