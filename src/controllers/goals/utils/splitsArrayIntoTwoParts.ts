@@ -76,7 +76,6 @@ export function splitsArrayIntoTwoParts(goals: IGoals[]) {
         codeStore: item.codeStore,
         activeSeller: item.activeSeller === 0 ? false : true,
         sumGoalDayByEmployee: item.goalDayByEmployee,
-
         days: [],
       });
     }
