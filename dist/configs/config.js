@@ -11,11 +11,11 @@ const config = {
         trustServerCertificate: true,
     },
     pool: {
-        max: 20, // Número máximo de conexões no pool
-        min: 0, // Número mínimo de conexões no pool
-        idleTimeoutMillis: 30000 // Tempo ocioso antes de fechar a conexão
+        max: 40,
+        min: 0,
+        idleTimeoutMillis: 30000
     },
-    connectionTimeout: 30000, // 30 segundos
-    requestTimeout: 30000 // 30 segundos
+    /*   connectionTimeout: 30000, */
+    /*   requestTimeout: 60000 */
 };
 exports.default = config;

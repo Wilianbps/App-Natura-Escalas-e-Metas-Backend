@@ -20,7 +20,7 @@ function selectGoalsByDateOrderById(storeCode, month, year) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const pool = yield connection_1.default.openConnection();
-            const query = `SELECT ID_VENDEDOR_LINX AS id, CODIGO_LOJA AS codeStore, NOME_VENDEDOR AS name, DATA AS date, META_DIA_LOJA AS goalDay, META_DIARIA_POR_VENDEDOR AS goalDayByEmployee FROM W_DGCS_METAS_VENDEDORES_ATIVOS WHERE CODIGO_LOJA = '${storeCode}' AND MONTH(DATA) = '${month}' AND YEAR(DATA) = '${year}' ORDER BY ID_VENDEDOR_LINX`;
+            const query = `SELECT ID_VENDEDOR_LINX AS id, CODIGO_LOJA AS codeStore, NOME_VENDEDOR AS name, VENDEDOR_EXTRA AS activeSeller, DATA AS date, META_DIA_LOJA AS goalDay, META_DIARIA_POR_VENDEDOR AS goalDayByEmployee FROM W_DGCS_METAS_VENDEDORES_ATIVOS WHERE CODIGO_LOJA = '${storeCode}' AND MONTH(DATA) = '${month}' AND YEAR(DATA) = '${year}' ORDER BY ID_VENDEDOR_LINX`;
             const goals = yield pool.request().query(query);
             return goals.recordset;
         }

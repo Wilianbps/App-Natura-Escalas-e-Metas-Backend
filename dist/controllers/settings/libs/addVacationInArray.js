@@ -19,46 +19,6 @@ function addVacationInArray(employees) {
                 });
             }
         });
-        /* const vacationsById = filteredVacations.filter(
-          (item) => item.idSeler === employee.idSeler
-        );
-    
-        console.log(vacationsById);
-    
-        if (vacationsById) {
-          vacationsById.forEach((item) => {
-            if (item.idDayOff && item.startVacation && item.finishVacation) {
-              item.arrayVacation?.push({
-                id: item.idDayOff,
-                startVacation: { date: item.startVacation },
-                finishVacation: { date: item.finishVacation },
-              });
-            }
-          });
-        } */
     });
 }
 exports.addVacationInArray = addVacationInArray;
-/*
-  data.forEach((employee) => {
-    if (!employee.arrayVacation) {
-      employee.arrayVacation = [];
-    }
-
-    const vacationsById = filteredVacations.filter(
-      (item) => item.idSeler == employee.idSeler
-    );
-
-    vacationsById.forEach((item) => {
-      if (employee.typeAbsence === "FERIAS") {
-        if (item.idDayOff && item.startVacation && item.finishVacation) {
-          item.arrayVacation?.push({
-            id: item.idDayOff,
-            startVacation: { date: item.startVacation },
-            finishVacation: { date: item.finishVacation },
-          });
-        }
-      }
-    });
-   
-  }); */

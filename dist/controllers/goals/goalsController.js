@@ -89,8 +89,6 @@ function findRankingGoalsLastTwelveMonths(req, res) {
             const { storeCode, initialDate, lastDate } = req.query;
             if (!storeCode || !initialDate || !lastDate)
                 return res.status(400).send();
-            console.log(initialDate);
-            console.log(lastDate);
             const goalsLastTwelveMonths = yield (0, goalsModels_1.selectRankingGoalsLastTwelveMonths)(storeCode.toString(), initialDate.toString());
             res.status(200).json(goalsLastTwelveMonths);
         }

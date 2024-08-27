@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateFinishedScaleByMonth = exports.findFinishedScaleByMonth = exports.loadMonthScale = exports.findInputFlow = exports.updateScaleByDate = exports.findScaleSummary = exports.findScaleByDate = void 0;
+exports.putScaleApprovalRequest = exports.findScaleApprovalRequest = exports.postScaleApprovalRequest = exports.updateFinishedScaleByMonth = exports.findFinishedScaleByMonth = exports.loadMonthScale = exports.findInputFlow = exports.updateScaleByDate = exports.findScaleSummary = exports.findScaleByDate = void 0;
 const scalesModels_1 = require("../../models/scales/scalesModels");
 const transformedScale_1 = require("../../models/scales/utils/transformedScale");
 const separateScaleByWeek_1 = require("./utils/separateScaleByWeek");
@@ -17,10 +17,10 @@ const removeDuplicateObject_1 = require("./utils/removeDuplicateObject");
 function findScaleByDate(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { date } = req.query;
-            if (!date)
+            const { date, storeCode } = req.query;
+            if (!date || !storeCode)
                 return res.status(400).send();
-            const scale = yield (0, scalesModels_1.selectScaleByDate)(date);
+            const scale = yield (0, scalesModels_1.selectScaleByDate)(date, storeCode);
             const result = (0, transformedScale_1.transformedScale)(scale);
             res.status(200).json({ result });
         }
@@ -34,10 +34,10 @@ exports.findScaleByDate = findScaleByDate;
 function findScaleSummary(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { month, year } = req.query;
-            if (!month || !year)
+            const { month, year, storeCode } = req.query;
+            if (!month || !year || !storeCode)
                 return res.status(400).send();
-            const getScaleSummary = yield (0, scalesModels_1.selectScaleSummary)(month.toString(), year.toString());
+            const getScaleSummary = yield (0, scalesModels_1.selectScaleSummary)(month, year, storeCode);
             const scaleSummaryByWeek = (0, separateScaleByWeek_1.separateScaleByWeek)(getScaleSummary, Number(month), Number(year));
             const data = (0, removeDuplicateObject_1.removeDuplicateObject)(scaleSummaryByWeek);
             res.status(200).json(data);
@@ -132,7 +132,9 @@ function updateFinishedScaleByMonth(req, res) {
                 res.status(200).send();
             }
             else {
-                res.status(400).json({ message: "Não foi possível atualizar a escala como finalizada" });
+                res.status(400).json({
+                    message: "Não foi possível atualizar a escala como finalizada",
+                });
             }
         }
         catch (error) {
@@ -142,3 +144,63 @@ function updateFinishedScaleByMonth(req, res) {
     });
 }
 exports.updateFinishedScaleByMonth = updateFinishedScaleByMonth;
+function postScaleApprovalRequest(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const data = req.body;
+            if (!data)
+                return res.status(400).send();
+            const success = yield (0, scalesModels_1.insertInTableScaleApproval)(data);
+            if (success) {
+                res.status(200).send();
+            }
+            else {
+                res.status(400).json({
+                    message: "Não foi possível inserir na tabela",
+                });
+            }
+        }
+        catch (error) {
+            console.log(error, "erro na solicitação");
+            return res.status(500).end();
+        }
+    });
+}
+exports.postScaleApprovalRequest = postScaleApprovalRequest;
+function findScaleApprovalRequest(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { month, year } = req.query;
+            if (!month || !year)
+                return res.status(400).send();
+            const result = yield (0, scalesModels_1.selectScaleApprovalRequest)(Number(month), Number(year));
+            res.status(200).json(result);
+        }
+        catch (error) {
+            console.log(error, "erro na solicitação");
+            return res.status(500).end();
+        }
+    });
+}
+exports.findScaleApprovalRequest = findScaleApprovalRequest;
+function putScaleApprovalRequest(req, res) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { month, year, storeCode, approvalDate, status } = req.query;
+            if (!month || !year || !storeCode || !approvalDate || !status)
+                return res.status(400).send();
+            const success = yield (0, scalesModels_1.updateScaleApprovalRequest)(Number(month), Number(year), storeCode, approvalDate, Number(status));
+            if (success) {
+                res.status(200).send();
+            }
+            else {
+                res.status(400).send();
+            }
+        }
+        catch (error) {
+            console.log(error, "erro na solicitação");
+            return res.status(500).end();
+        }
+    });
+}
+exports.putScaleApprovalRequest = putScaleApprovalRequest;

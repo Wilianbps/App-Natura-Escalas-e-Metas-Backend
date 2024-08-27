@@ -29,6 +29,7 @@ function splitsArrayIntoTwoParts(goals) {
                 id: item.id,
                 name: item.name,
                 codeStore: item.codeStore,
+                activeSeller: item.activeSeller === 0 ? false : true,
                 sumGoalDayByEmployee: item.goalDayByEmployee,
                 days: [],
             });
@@ -48,6 +49,8 @@ function splitsArrayIntoTwoParts(goals) {
                 id: item.id,
                 name: item.name,
                 codeStore: item.codeStore,
+                activeSeller: item.activeSeller === 0 ? false : true,
+                sumGoalDayByEmployee: item.goalDayByEmployee,
                 days: [],
             });
         }
@@ -168,4 +171,4 @@ export function splitsArrayIntoTwoParts(goals: IGoals[]): IDataGoal[][] {
 
   return data;
 }
- */ 
+ */

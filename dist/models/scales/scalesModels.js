@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateFinishedScale = exports.SelectFinishedScaleByMonth = exports.executeProcToLoadMonthScale = exports.SelectInputFlow = exports.updateScale = exports.selectScaleSummary = exports.selectScaleByDate = void 0;
+exports.updateScaleApprovalRequest = exports.selectScaleApprovalRequest = exports.insertInTableScaleApproval = exports.updateFinishedScale = exports.SelectFinishedScaleByMonth = exports.executeProcToLoadMonthScale = exports.SelectInputFlow = exports.updateScale = exports.selectScaleSummary = exports.selectScaleByDate = void 0;
 const connection_1 = __importDefault(require("../Connection/connection"));
-function selectScaleByDate(date) {
+function selectScaleByDate(date, storeCode) {
     return __awaiter(this, void 0, void 0, function* () {
         const pool = yield connection_1.default.openConnection();
         try {
@@ -30,7 +30,7 @@ function selectScaleByDate(date) {
 FROM 
     W_DGCS_CONSULTA_ESCALAS 
 WHERE 
-    CAST(DATA_ESCALA AS DATE) = '${date}' 
+    CAST(DATA_ESCALA AS DATE) = '${date}' AND CODIGO_LOJA = '${storeCode}'
 ORDER BY 
     CASE 
         WHEN STATUS = 0 THEN 1  -- Coloca STATUS 0 por último
@@ -60,11 +60,11 @@ ORDER BY
     });
 }
 exports.selectScaleByDate = selectScaleByDate;
-function selectScaleSummary(month, year) {
+function selectScaleSummary(month, year, storeCode) {
     return __awaiter(this, void 0, void 0, function* () {
         const pool = yield connection_1.default.openConnection();
         try {
-            const query = `SELECT ID_VENDEDOR_LINX AS id, NOME_VENDEDOR AS name, DATA_ESCALA AS date, DAY(DATA_ESCALA) AS day, MONTH(DATA_ESCALA) AS month, YEAR(DATA_ESCALA) AS year, ID_TURNO AS turnId, STATUS AS status, HR_INICIO AS startTime, HR_FIM AS endTime FROM W_DGCS_CONSULTA_ESCALAS_RESUMO WHERE MONTH(DATA_ESCALA) = '${month}' AND YEAR(DATA_ESCALA) = '${year}' ORDER BY DATA_ESCALA, ID_TURNO`;
+            const query = `SELECT ID_VENDEDOR_LINX AS id, NOME_VENDEDOR AS name, DATA_ESCALA AS date, DAY(DATA_ESCALA) AS day, MONTH(DATA_ESCALA) AS month, YEAR(DATA_ESCALA) AS year, ID_TURNO AS turnId, STATUS AS status, HR_INICIO AS startTime, HR_FIM AS endTime FROM W_DGCS_CONSULTA_ESCALAS_RESUMO WHERE MONTH(DATA_ESCALA) = '${month}' AND YEAR(DATA_ESCALA) = '${year}' AND CODIGO_LOJA = '${storeCode}' ORDER BY DATA_ESCALA, ID_TURNO`;
             const scaleSummary = yield pool.request().query(query);
             return scaleSummary.recordset;
         }
@@ -171,7 +171,7 @@ function executeProcToLoadMonthScale(storeCode, loginUser, date, currentDate, fi
     return __awaiter(this, void 0, void 0, function* () {
         const pool = yield connection_1.default.openConnection();
         try {
-            const query = `SP_DGCS_PREENCHER_ESCALA '${date}'`;
+            const query = `SP_DGCS_PREENCHER_ESCALA '${date}', '${loginUser}'`;
             yield pool.request().query(query);
             const insertQuery = `
         INSERT INTO ESCALA_FINALIZADA (CODIGO_LOJA, LOGIN_USUARIO, DATA_ESCALA_INICIO, FINALIZADA)
@@ -248,3 +248,78 @@ function updateFinishedScale(storeCode, month, year, endScaleDate) {
     });
 }
 exports.updateFinishedScale = updateFinishedScale;
+function insertInTableScaleApproval(data) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pool = yield connection_1.default.openConnection();
+        try {
+            const insert = `INSERT INTO APROVACAO_ESCALA (DESCRICAO, RESPONSAVEL, CODIGO_LOJA, FILIAL, DATA_SOLICITACAO, [STATUS]) VALUES ('${data.description}', '${data.responsible}', '${data.storeCode}', '${data.branch}', '${data.requestDate}', ${data.status})`;
+            yield pool.request().query(insert);
+            return true;
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                console.log(`Erro ao executar a consulta ${error.message}`);
+            }
+            else {
+                console.log("Erro desconhecido ao executar a consulta");
+            }
+            throw error;
+        }
+        finally {
+            yield connection_1.default.closeConnection();
+            console.log("Conexão fechada");
+        }
+    });
+}
+exports.insertInTableScaleApproval = insertInTableScaleApproval;
+function selectScaleApprovalRequest(month, year) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pool = yield connection_1.default.openConnection();
+        try {
+            const query = `SELECT TOP 1 DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
+    DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
+    WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+            const result = (yield pool.request().query(query)).recordset;
+            return result;
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                console.log(`Erro ao executar a consulta ${error.message}`);
+            }
+            else {
+                console.log("Erro desconhecido ao executar a consulta");
+            }
+            throw error;
+        }
+        finally {
+            yield connection_1.default.closeConnection();
+            console.log("Conexão fechada");
+        }
+    });
+}
+exports.selectScaleApprovalRequest = selectScaleApprovalRequest;
+function updateScaleApprovalRequest(month, year, storeCode, approvalDate, status) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const pool = yield connection_1.default.openConnection();
+        try {
+            const update = `UPDATE APROVACAO_ESCALA SET DATA_APROVACAO = '${approvalDate}', STATUS = ${status} WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month}
+  AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year};`;
+            yield pool.request().query(update);
+            return true;
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                console.log(`Erro ao executar a consulta ${error.message}`);
+            }
+            else {
+                console.log("Erro desconhecido ao executar a consulta");
+            }
+            throw error;
+        }
+        finally {
+            yield connection_1.default.closeConnection();
+            console.log("Conexão fechada");
+        }
+    });
+}
+exports.updateScaleApprovalRequest = updateScaleApprovalRequest;
