@@ -263,7 +263,11 @@ export async function selectScaleApprovalRequest(month: number, year: number) {
   const pool = await connection.openConnection();
 
   try {
-    const query = `SELECT TOP 1 DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
+/*     const query = `SELECT TOP 1 DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
+    DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
+    WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`; */
+
+    const query = `SELECT ID AS id, DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
     DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
     WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
 
@@ -284,6 +288,7 @@ export async function selectScaleApprovalRequest(month: number, year: number) {
 }
 
 export async function updateScaleApprovalRequest(
+  id: string,
   month: number,
   year: number,
   storeCode: string,
@@ -293,7 +298,7 @@ export async function updateScaleApprovalRequest(
   const pool = await connection.openConnection();
 
   try {
-    const update = `UPDATE APROVACAO_ESCALA SET DATA_APROVACAO = '${approvalDate}', STATUS = ${status} WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month}
+    const update = `UPDATE APROVACAO_ESCALA SET DATA_APROVACAO = '${approvalDate}', STATUS = ${status} WHERE ID = '${id}' AND CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month}
   AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year};`;
 
     await pool.request().query(update);

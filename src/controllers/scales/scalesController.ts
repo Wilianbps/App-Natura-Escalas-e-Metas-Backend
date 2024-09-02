@@ -204,12 +204,13 @@ export async function findScaleApprovalRequest(req: Request, res: Response) {
 
 export async function putScaleApprovalRequest(req: Request, res: Response) {
   try {
-    const { month, year, storeCode, approvalDate, status } = req.query;
+    const { id, month, year, storeCode, approvalDate, status } = req.query;
 
-    if (!month || !year || !storeCode || !approvalDate || !status)
+    if (!id || !month || !year || !storeCode || !approvalDate || !status)
       return res.status(400).send();
 
     const success = await updateScaleApprovalRequest(
+      id as string,
       Number(month),
       Number(year),
       storeCode as string,
