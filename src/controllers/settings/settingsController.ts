@@ -11,6 +11,21 @@ import { addDayOffInArray } from "./libs/addDayOffInArray";
 import { addVacationInArray } from "./libs/addVacationInArray";
 import { filterDayOffAndVacation } from "./libs/filterDayOffAndVacation";
 
+export async function transformEmployees(
+  employees: IEmployee[]
+): Promise<IEmployee[]> {
+  employees.map((employee) => (employee.idSeler === 1 ? true : false));
+
+  addDayOffInArray(employees);
+  addVacationInArray(employees);
+
+  const employeesWithOutDuplicateObjects = removeDuplicateObject(employees);
+
+  const filterArray = filterDayOffAndVacation(employeesWithOutDuplicateObjects);
+
+  return filterArray;
+}
+
 export async function getAllEmployees(req: Request, res: Response) {
   try {
     const { storeCode } = req.query;
@@ -19,32 +34,17 @@ export async function getAllEmployees(req: Request, res: Response) {
 
     const success = await execProcImportSellers();
 
-    if (success){
+    if (success) {
       const employees: IEmployee[] = await findAllEmployees(
         storeCode as string
       );
 
-      employees.map((employee) => (employee.idSeler === 1 ? true : false));
+      const transformedEmployees = await transformEmployees(employees);
 
-      addDayOffInArray(employees);
-
-      addVacationInArray(employees);
-
-      const employeesWithOutDuplicateObjects = removeDuplicateObject(employees);
-
-      const filterArray = filterDayOffAndVacation(
-        employeesWithOutDuplicateObjects
-      );
-
-      return res.status(200).json(filterArray);
-    }else{
+      return res.status(200).json(transformedEmployees);
+    } else {
       return res.status(400).send();
     }
-    
-
-  
-     
-    
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(400).end();
@@ -83,12 +83,16 @@ export async function updateShiftRestSchedule(req: Request, res: Response) {
         .status(400)
         .json({ message: "Usuário ou código da loja não identificado" });
 
-    const update = await updateEmployee(data, storeCode as string);
+    const result = await updateEmployee(data, storeCode as string);
 
-    if (update.success) {
-      return res.status(200).json({ message: update.message });
+    if (result.success) {
+      const employees = await findAllEmployees(storeCode as string);
+      const transformedEmployees = await transformEmployees(employees);
+      return res
+        .status(200)
+        .json({ message: result.message, employees: transformedEmployees });
     } else {
-      return res.status(400).json({ message: update.message });
+      return res.status(400).json({ message: result.message });
     }
   } catch (error) {
     res.status(500).json({ message: "Erro" });

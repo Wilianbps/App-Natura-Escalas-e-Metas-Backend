@@ -96,21 +96,18 @@ export async function updateSettings(settings: ISettings, storeCode: string) {
 export async function updateEmployee(
   employee: IEmployee,
   storeCode: string
-): Promise<{ success?: boolean; message?: string }> {
+): Promise<{ success?: boolean; message?: string; employees?: IEmployee[] }> {
   const pool = await connection.openConnection();
 
   return new Promise(async (resolve, reject) => {
     try {
-      //INÍCIO UPDATE DO TURNO
-
+      // INÍCIO UPDATE DO TURNO
       const UpdateIdShift = `UPDATE LOJA_VENDEDOR SET ID_TURNOS = '${employee.idShift}' WHERE ID_VENDEDOR_LINX = '${employee.idSeler}' AND CODIGO_LOJA = '${storeCode}'`;
-
       await pool.request().query(UpdateIdShift);
 
-      //FIM UPDATE DO TURNO
+      // FIM UPDATE DO TURNO
 
-      //INÍCIO INSERT OU DELETE DAS FOLGAS
-
+      // INÍCIO INSERT OU DELETE DAS FOLGAS
       const arrayDaysOff = employee.arrayDaysOff;
 
       for (let i = 0; i < arrayDaysOff.length; i++) {
@@ -127,8 +124,9 @@ export async function updateEmployee(
         }
       }
 
-      //FIM INSERT OU DELETE DAS FOLGAS
+      // FIM INSERT OU DELETE DAS FOLGAS
 
+      // INÍCIO INSERT OU DELETE DAS FÉRIAS
       const arrayVacation = employee.arrayVacation;
 
       for (let i = 0; i < arrayVacation.length; i++) {
@@ -140,26 +138,29 @@ export async function updateEmployee(
         }
 
         if (arrayVacation[i].type === "D") {
-          const deleteVacation = `DELETE FROM AUSENCIA_PROGRAMADA WHERE ID = '${arrayVacation[i].id}' AND CODIGO_lOJA = '${storeCode}'`;
+          const deleteVacation = `DELETE FROM AUSENCIA_PROGRAMADA WHERE ID = '${arrayVacation[i].id}' AND CODIGO_LOJA = '${storeCode}'`;
           await pool.request().query(deleteVacation);
         }
       }
 
-      //INÍCIO INSERT OU DELETE DAS FÉRIAS
+      // FIM INSERT OU DELETE DAS FÉRIAS
 
-      //FIM INSERT OU DELETE DAS FÉRIAS
+      // Após as atualizações, retorne a lista de funcionários atualizada
+      const updatedEmployees = await findAllEmployees(storeCode);
 
       return resolve({
         success: true,
         message: "Alterações feitas com sucesso.",
+        employees: updatedEmployees,
       });
     } catch (error) {
       if (error instanceof Error) {
-        console.log(`Erro ao executar a consulta ${error.message}`);
+        console.log(`Erro ao executar a consulta: ${error.message}`);
+        reject({ success: false, message: error.message });
       } else {
         console.log("Erro desconhecido ao executar a consulta");
+        reject({ success: false, message: "Erro desconhecido ao executar a consulta" });
       }
-      throw error;
     } finally {
       await connection.closeConnection();
       console.log("Conexão fechada");
