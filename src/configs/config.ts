@@ -13,8 +13,8 @@ const config = {
     min: 0, 
     idleTimeoutMillis: 30000 
   },
-/*   connectionTimeout: 30000, */
-/*   requestTimeout: 60000 */
+  connectionTimeout: 30000,
+  requestTimeout: 60000,
 };
 
 export default config;

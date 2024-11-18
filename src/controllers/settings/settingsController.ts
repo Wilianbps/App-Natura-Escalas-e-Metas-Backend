@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import {
+  deleteEmployee,
   execProcImportSellers,
   findAllEmployees,
+  insertEmployee,
   updateEmployee,
   updateSettings,
 } from "../../models/settings/settingsModels";
-import { IEmployee } from "src/models/settings/settings";
+import { IEmployee, type IInfoEmployee } from "src/models/settings/settings";
 import { removeDuplicateObject } from "./libs/removeDuplicateObject";
 import { addDayOffInArray } from "./libs/addDayOffInArray";
 import { addVacationInArray } from "./libs/addVacationInArray";
@@ -32,7 +34,9 @@ export async function getAllEmployees(req: Request, res: Response) {
 
     if (!storeCode) return res.status(404).send();
 
-    const success = await execProcImportSellers();
+    /*     const success = await execProcImportSellers(); */
+
+    const success = true;
 
     if (success) {
       const employees: IEmployee[] = await findAllEmployees(
@@ -96,5 +100,43 @@ export async function updateShiftRestSchedule(req: Request, res: Response) {
     }
   } catch (error) {
     res.status(500).json({ message: "Erro" });
+  }
+}
+
+export async function addEmployee(req: Request, res: Response) {
+  try {
+    const employee: IInfoEmployee = req.body;
+
+    await insertEmployee(employee);
+
+    return res.status(200).json({ message: "Usuário cadastrado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ message: "Erro" });
+  }
+}
+
+export async function removeEmployeeById(req: Request, res: Response) {
+  const { id: employeeId } = req.params; // Obtém o ID do funcionário do parâmetro da URL
+
+  // Converte o id para número
+  const employeeIdNumber = Number(employeeId);
+
+  if (isNaN(employeeIdNumber)) {
+    return res.status(400).json({ message: 'ID inválido. Deve ser um número.' });
+  }
+
+  try {
+    // Tenta encontrar e excluir o funcionário
+    const employeeToDelete = await deleteEmployee(employeeIdNumber);
+
+    if (!employeeToDelete) {
+      return res.status(404).json({ message: 'Colaborador não encontrado' });
+    }
+
+    // Resposta de sucesso
+    return res.status(200).json({ message: 'Colaborador excluído com sucesso' });
+  } catch (err) {
+    // Caso haja erro, retorna uma mensagem
+    return res.status(500).json({ message: 'Erro ao excluir funcionário', error: err });
   }
 }

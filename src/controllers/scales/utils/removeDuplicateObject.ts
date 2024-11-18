@@ -30,7 +30,10 @@ type WeeksArray = Week[];
 
 export function removeDuplicateObject(scaleSummary: WeeksArray) {
 
+/*   console.log("scaleSummary", scaleSummary) */
+
   function verificarTurno(startTime: string, endTime: string): string {
+    console.log("startTime", startTime)
 
     // Definindo os intervalos de cada turno
     

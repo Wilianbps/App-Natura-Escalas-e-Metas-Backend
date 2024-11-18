@@ -17,6 +17,8 @@ export function addDaysOfMonthIntoArrays(
 ) {
   const arrayPart1 = array[0];
 
+
+
   const arrayPart2 = array[1];
 
   let data = [];

@@ -4,6 +4,8 @@ export interface IEmployee {
   storeCode?: string;
   userLogin?: string;
   name?: string;
+  cpf: string | null
+  newUser: boolean | null,
   status?: number;
   office?: string;
   idShift?: number;
@@ -25,6 +27,16 @@ export interface IEmployee {
     type?:string
   }[];
   flowScale?: string;
+}
+
+export interface IInfoEmployee {
+  name: string
+  newUser: boolean | null,
+  position: string
+  cpf: string | null
+  selectedShift: number | false
+  store: string
+  branchName: string
 }
 
 interface IEmployeStatus {

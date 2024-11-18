@@ -10,12 +10,14 @@ import {
   postScaleApprovalRequest,
   findScaleApprovalRequest,
   putScaleApprovalRequest,
+  findScaleSummarysByFortnight,
 } from "../../controllers/scales/scalesController";
 
 const router = express.Router();
 
 router.get("/get-scale-by-date", findScaleByDate);
 router.get("/get-scale-summary", findScaleSummary);
+router.get("/get-scale-summary-by-fortnight", findScaleSummarysByFortnight);
 router.get("/get-input-flow", findInputFlow);
 router.get("/get-finished-scale-by-month", findFinishedScaleByMonth);
 router.get("/load-scale-of-month", loadMonthScale);

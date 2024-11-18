@@ -1,5 +1,5 @@
 import connection from "../Connection/connection";
-import { IEmployee, ISettings } from "./settings";
+import { IEmployee, ISettings, type IInfoEmployee } from "./settings";
 
 export async function execProcImportSellers() {
   const pool = await connection.openConnection();
@@ -35,7 +35,7 @@ export async function findAllEmployees(storeCode: string) {
   try {
     const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, 
     NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, 
-    AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, FLUXO_LOJA AS flowScale 
+    AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, CPF AS cpf, ADICIONADO_MANUALMENTE AS newUser, FLUXO_LOJA AS flowScale 
     FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
     const employees = await pool.request().query(query);
     return employees.recordset;
@@ -159,7 +159,10 @@ export async function updateEmployee(
         reject({ success: false, message: error.message });
       } else {
         console.log("Erro desconhecido ao executar a consulta");
-        reject({ success: false, message: "Erro desconhecido ao executar a consulta" });
+        reject({
+          success: false,
+          message: "Erro desconhecido ao executar a consulta",
+        });
       }
     } finally {
       await connection.closeConnection();
@@ -167,3 +170,133 @@ export async function updateEmployee(
     }
   });
 }
+
+export async function insertEmployee(employee: IInfoEmployee) {
+  console.log("chegou aqui para fazer o insert", employee);
+
+  const pool = await connection.openConnection();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const date = `${year}-${month}-${day}`;
+
+  try {
+    // Consultar o maior ID atual na tabela
+    const maxIdResult = await pool.request().query(`
+      SELECT MAX(ID_VENDEDOR_LINX) AS MaxId
+      FROM Loja_Vendedor
+    `);
+
+    // Pegar o valor do maior ID e adicionar 1
+    const maxId = maxIdResult.recordset[0].MaxId || 0; // Se não houver IDs, iniciar de 0
+    const newId = Number(maxId) + 1;
+
+    console.log(newId);
+
+    // Verificar se o ID tem 5 dígitos, caso contrário, tratar o erro
+    if (newId.toString().length > 4) {
+      throw new Error("O novo ID gerado excede 4 dígitos.");
+    }
+
+    const query = `
+      INSERT INTO Loja_Vendedor (CODIGO_LOJA, FILIAL, ID_VENDEDOR_LINX, NOME_VENDEDOR, ATIVO, ID_TURNOS, VENDEDOR_EXTRA, CARGO, DATA_IMPORTACAO, CPF, ADICIONADO_MANUALMENTE)
+      VALUES (
+        '${employee.store}',
+        '${employee.branchName}',
+        '${newId}',
+        '${employee.name.toUpperCase()}',
+        ${1},
+        ${employee.selectedShift},
+        ${0},
+        '${employee.position}',
+        '${date}',
+        '${employee.cpf}',
+        ${1}
+      );
+    `;
+
+    await pool.request().query(query);
+    console.log("Colaborador inserido com sucesso!");
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta: ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function deleteEmployee(id: number) {
+  const pool = await connection.openConnection(); // Abre a conexão com o banco de dados
+  try {
+
+    const query = `DELETE FROM LOJA_VENDEDOR WHERE ID_VENDEDOR_LINX = ${id}`;
+
+    const result = await pool.request().query(query);
+
+    if (result.rowsAffected[0] === 0) {
+      return null;
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta: ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error; // Relança o erro para ser tratado no controlador
+  } finally {
+    await connection.closeConnection(); // Fecha a conexão
+    console.log("Conexão fechada");
+  }
+}
+
+/* export async function insertEmployee(employee: IInfoEmployee) {
+  
+  console.log("chegou aqui para fazer o insert", employee)
+  
+  const pool = await connection.openConnection();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  const date = `${year}-${month}-${day}`
+
+  try {
+    const query = `
+      INSERT INTO Loja_Vendedor (CODIGO_LOJA, FILIAL, ID_VENDEDOR_LINX, NOME_VENDEDOR, ATIVO, ID_TURNOS, VENDEDOR_EXTRA, CARGO, DATA_IMPORTACAO)
+      VALUES (
+        '${employee.store}',
+        '${employee.branchName}',
+        '${1234}',
+        '${employee.name.toUpperCase()}',
+        ${1},
+        ${employee.selectedShift},
+        ${0},
+        '${employee.position}',
+        '${date}'
+      );
+    `;
+
+   await pool.request().query(query);
+
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+ */
