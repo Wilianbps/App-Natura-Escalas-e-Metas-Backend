@@ -29,7 +29,7 @@ export interface IEmployee {
   flowScale?: string;
 }
 
-export interface IInfoEmployee {
+export interface IInfoAddEmployee {
   name: string
   newUser: boolean | null,
   position: string
@@ -37,6 +37,14 @@ export interface IInfoEmployee {
   selectedShift: number | false
   store: string
   branchName: string
+}
+
+export interface IInfoUpdateEmployee{
+  name: string
+  position: string
+  cpf: string | null
+  selectedShift: number | false
+  storeCode: string
 }
 
 interface IEmployeStatus {

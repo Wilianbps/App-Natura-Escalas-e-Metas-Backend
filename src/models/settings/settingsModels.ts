@@ -1,5 +1,10 @@
 import connection from "../Connection/connection";
-import { IEmployee, ISettings, type IInfoEmployee } from "./settings";
+import {
+  IEmployee,
+  ISettings,
+  type IInfoAddEmployee,
+  type IInfoUpdateEmployee,
+} from "./settings";
 
 export async function execProcImportSellers() {
   const pool = await connection.openConnection();
@@ -93,7 +98,7 @@ export async function updateSettings(settings: ISettings, storeCode: string) {
   }
 }
 
-export async function updateEmployee(
+export async function updateSettingsEmployee(
   employee: IEmployee,
   storeCode: string
 ): Promise<{ success?: boolean; message?: string; employees?: IEmployee[] }> {
@@ -171,8 +176,7 @@ export async function updateEmployee(
   });
 }
 
-export async function insertEmployee(employee: IInfoEmployee) {
-  console.log("chegou aqui para fazer o insert", employee);
+export async function insertEmployee(employee: IInfoAddEmployee) {
 
   const pool = await connection.openConnection();
   const now = new Date();
@@ -232,9 +236,8 @@ export async function insertEmployee(employee: IInfoEmployee) {
 }
 
 export async function deleteEmployee(id: number) {
-  const pool = await connection.openConnection(); // Abre a conexão com o banco de dados
+  const pool = await connection.openConnection();
   try {
-
     const query = `DELETE FROM LOJA_VENDEDOR WHERE ID_VENDEDOR_LINX = ${id}`;
 
     const result = await pool.request().query(query);
@@ -250,46 +253,28 @@ export async function deleteEmployee(id: number) {
     } else {
       console.log("Erro desconhecido ao executar a consulta");
     }
-    throw error; // Relança o erro para ser tratado no controlador
+    throw error;
   } finally {
-    await connection.closeConnection(); // Fecha a conexão
+    await connection.closeConnection();
     console.log("Conexão fechada");
   }
 }
 
-/* export async function insertEmployee(employee: IInfoEmployee) {
-  
-  console.log("chegou aqui para fazer o insert", employee)
-  
+export async function updateEmployee(
+  id: number,
+  employee: IInfoUpdateEmployee
+) {
   const pool = await connection.openConnection();
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  const date = `${year}-${month}-${day}`
-
   try {
-    const query = `
-      INSERT INTO Loja_Vendedor (CODIGO_LOJA, FILIAL, ID_VENDEDOR_LINX, NOME_VENDEDOR, ATIVO, ID_TURNOS, VENDEDOR_EXTRA, CARGO, DATA_IMPORTACAO)
-      VALUES (
-        '${employee.store}',
-        '${employee.branchName}',
-        '${1234}',
-        '${employee.name.toUpperCase()}',
-        ${1},
-        ${employee.selectedShift},
-        ${0},
-        '${employee.position}',
-        '${date}'
-      );
-    `;
+    const query = `UPDATE LOJA_VENDEDOR SET NOME_VENDEDOR = '${employee.name}', CARGO = '${employee.position}', CPF = '${employee.cpf}',
+     ID_TURNOS = ${employee.selectedShift} WHERE CODIGO_lOJA = '${employee.storeCode}' AND ID_VENDEDOR_LINX = ${id}`;
 
-   await pool.request().query(query);
+    const result = await pool.request().query(query);
 
+    return result;
   } catch (error) {
     if (error instanceof Error) {
-      console.log(`Erro ao executar a consulta ${error.message}`);
+      console.log(`Erro ao executar a consulta: ${error.message}`);
     } else {
       console.log("Erro desconhecido ao executar a consulta");
     }
@@ -299,4 +284,3 @@ export async function deleteEmployee(id: number) {
     console.log("Conexão fechada");
   }
 }
- */
