@@ -36,14 +36,15 @@ interface IGoalsByWeek {
 
 export async function findGoalsByFortnight(req: Request, res: Response) {
   try {
-    const { storeCode, month, year } = req.query;
+    const { storeCode, month, year, goalType } = req.query;
 
-    if (!storeCode || !month || !year) return res.status(400).send();
+    if (!storeCode || !month || !year || !goalType) return res.status(400).send();
 
     const goals = await selectGoalsByDateOrderById(
       storeCode.toString(),
       month.toString(),
-      year.toString()
+      year.toString(),
+      goalType.toString()
     );
 
     const splitArray = splitsArrayIntoTwoParts(goals);
