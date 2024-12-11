@@ -77,9 +77,17 @@ export async function selectGoalsByWeek(
   const pool = await connection.openConnection();
 
   try {
-    const query = `SELECT SUM(META_VALOR) AS goalValue, META_TIPO AS goalType FROM W_DGCS_CONSULTA_METAS 
-                  WHERE CODIGO_LOJA = '${storeCode}' AND DATA BETWEEN '${initialDate}' AND '${lastDate}'
-                  GROUP BY META_TIPO`;
+    const query = `SELECT 
+    SUM(META_VALOR) AS goalValue, 
+    META_TIPO AS goalType FROM W_DGCS_CONSULTA_METAS WHERE CODIGO_LOJA = '${storeCode}' 
+    AND DATA BETWEEN '${initialDate}' AND '${lastDate}' GROUP BY META_TIPO
+    ORDER BY 
+    CASE 
+        WHEN META_TIPO = 'META' THEN 1
+        WHEN META_TIPO = 'SUPER_META' THEN 2
+        WHEN META_TIPO = 'HIPER_META' THEN 3
+    END
+`;
 
     const goals = await pool.request().query(query);
 
