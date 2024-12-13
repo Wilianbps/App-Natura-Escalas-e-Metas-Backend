@@ -46,12 +46,29 @@ export async function selectGoalsByDateOrderById(
 export async function selectGoalsByDate(
   storeCode: string,
   month: string,
-  year: string
+  year: string,
+  goalType: string
 ) {
   const pool = await connection.openConnection();
 
   try {
-    const query = `SELECT ID_VENDEDOR_LINX AS id, CODIGO_LOJA AS codeStore, NOME_VENDEDOR AS name, DATA AS date, META_DIA_LOJA AS goalDay, META_DIARIA_POR_VENDEDOR AS goalDayByEmployee FROM W_DGCS_METAS_VENDEDORES_ATIVOS WHERE CODIGO_LOJA = '${storeCode}' AND MONTH(DATA) = '${month}' AND YEAR(DATA) = '${year}'`;
+
+    let goalField;
+    switch (goalType) {
+      case "goal":
+        goalField = "ESCALAS_METAS_META";
+        break;
+      case "super-goal":
+        goalField = "ESCALAS_METAS_SUPER";
+        break;
+      case "hiper-goal":
+        goalField = "ESCALAS_METAS_HIPER";
+        break;
+      default:
+        throw new Error(`Tipo de meta inválido: ${goalType}`);
+    }
+
+    const query = `SELECT ID_VENDEDOR_LINX AS id, CODIGO_LOJA AS codeStore, NOME_VENDEDOR AS name, DATA AS date, META_DIA_LOJA AS goalDay, ${goalField} AS goalDayByEmployee FROM W_DGCS_METAS_VENDEDORES_ATIVOS WHERE CODIGO_LOJA = '${storeCode}' AND MONTH(DATA) = '${month}' AND YEAR(DATA) = '${year}'`;
 
     const goals = await pool.request().query(query);
 

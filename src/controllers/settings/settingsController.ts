@@ -39,9 +39,7 @@ export async function getAllEmployees(req: Request, res: Response) {
 
     if (!storeCode) return res.status(404).send();
 
-    /*     const success = await execProcImportSellers(); */
-
-    const success = true;
+    const success = await execProcImportSellers();
 
     if (success) {
       const employees: IEmployee[] = await findAllEmployees(
@@ -171,12 +169,10 @@ export async function updateEmployeeById(req: Request, res: Response) {
         dataEmployee.storeCode as string
       );
       const transformedEmployees = await transformEmployees(employees);
-      return res
-        .status(200)
-        .json({
-          message: "Alteração feita com sucesso",
-          employees: transformedEmployees,
-        });
+      return res.status(200).json({
+        message: "Alteração feita com sucesso",
+        employees: transformedEmployees,
+      });
     } else {
       return res
         .status(400)

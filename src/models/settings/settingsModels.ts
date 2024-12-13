@@ -1,3 +1,4 @@
+import { format } from "path";
 import connection from "../Connection/connection";
 import {
   IEmployee,
@@ -40,8 +41,8 @@ export async function findAllEmployees(storeCode: string) {
   try {
     const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, 
     NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, 
-    AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, CPF AS cpf, ADICIONADO_MANUALMENTE AS newUser, FLUXO_LOJA AS flowScale 
-    FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
+    AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, CPF AS cpf, ADICIONADO_MANUALMENTE AS newUser, FLUXO_LOJA AS flowScale, 
+    DATA_IMPORTACAO AS startDate FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
     const employees = await pool.request().query(query);
     return employees.recordset;
   } catch (error) {
@@ -177,15 +178,21 @@ export async function updateSettingsEmployee(
 }
 
 export async function insertEmployee(employee: IInfoAddEmployee) {
-
   const pool = await connection.openConnection();
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const date = `${year}-${month}-${day}`;
 
   try {
+    let date = "";
+    
+    if (employee.startDate) {
+      const startDate = new Date(employee.startDate);
+
+      const year = startDate.getUTCFullYear();
+      const month = String(startDate.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(startDate.getUTCDate()).padStart(2, "0");
+ 
+      date = `${year}-${month}-${day}`;
+    }
+
     // Consultar o maior ID atual na tabela
     const maxIdResult = await pool.request().query(`
       SELECT MAX(ID_VENDEDOR_LINX) AS MaxId
@@ -195,8 +202,6 @@ export async function insertEmployee(employee: IInfoAddEmployee) {
     // Pegar o valor do maior ID e adicionar 1
     const maxId = maxIdResult.recordset[0].MaxId || 0; // Se não houver IDs, iniciar de 0
     const newId = Number(maxId) + 1;
-
-    console.log(newId);
 
     // Verificar se o ID tem 5 dígitos, caso contrário, tratar o erro
     if (newId.toString().length > 4) {

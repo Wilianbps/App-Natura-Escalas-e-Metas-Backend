@@ -10,7 +10,6 @@ import { splitsArrayIntoTwoParts } from "./utils/splitsArrayIntoTwoParts";
 import { addDaysOfMonthIntoArrays } from "./utils/addDaysOfMonthIntoArrays";
 import { separateGoalsByEmployees } from "./utils/separateGoalsByEmployees";
 import { calculateGoalMonthByEmployee } from "./utils/calculateGoalMonthByEmployee";
-import { execProcImportSellers } from "src/models/settings/settingsModels";
 
 interface IGoals {
   id: string;
@@ -64,14 +63,15 @@ export async function findGoalsByFortnight(req: Request, res: Response) {
 
 export async function findGoalsByWeek(req: Request, res: Response) {
   try {
-    const { storeCode, month, year } = req.query;
+    const { storeCode, month, year, goalType } = req.query;
 
-    if (!storeCode || !month || !year) return res.status(400).send();
+    if (!storeCode || !month || !year || !goalType) return res.status(400).send();
 
     const goals = await selectGoalsByDate(
       storeCode.toString(),
       month.toString(),
-      year.toString()
+      year.toString(),
+      goalType.toString()
     );
 
     const goalsByWeek = separateGoalsByEmployees(

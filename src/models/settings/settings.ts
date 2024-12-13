@@ -5,6 +5,7 @@ export interface IEmployee {
   userLogin?: string;
   name?: string;
   cpf: string | null
+  startDate: Date | null
   newUser: boolean | null,
   status?: number;
   office?: string;
@@ -35,6 +36,7 @@ export interface IInfoAddEmployee {
   position: string
   cpf: string | null
   selectedShift: number | false
+  startDate: Date | null
   store: string
   branchName: string
 }
@@ -43,6 +45,7 @@ export interface IInfoUpdateEmployee{
   name: string
   position: string
   cpf: string | null
+  startDate: Date | null
   selectedShift: number | false
   storeCode: string
 }
