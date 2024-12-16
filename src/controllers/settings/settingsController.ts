@@ -178,5 +178,9 @@ export async function updateEmployeeById(req: Request, res: Response) {
         .status(400)
         .json({ message: "Erro ao fazer alteração do colaborador" });
     }
-  } catch (error) {}
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: "Erro no servidor", error: err });
+  }
 }

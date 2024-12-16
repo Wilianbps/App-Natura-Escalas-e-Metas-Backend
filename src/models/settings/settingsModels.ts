@@ -182,14 +182,14 @@ export async function insertEmployee(employee: IInfoAddEmployee) {
 
   try {
     let date = "";
-    
+
     if (employee.startDate) {
       const startDate = new Date(employee.startDate);
 
       const year = startDate.getUTCFullYear();
       const month = String(startDate.getUTCMonth() + 1).padStart(2, "0");
       const day = String(startDate.getUTCDate()).padStart(2, "0");
- 
+
       date = `${year}-${month}-${day}`;
     }
 
@@ -271,7 +271,19 @@ export async function updateEmployee(
 ) {
   const pool = await connection.openConnection();
   try {
-    const query = `UPDATE LOJA_VENDEDOR SET NOME_VENDEDOR = '${employee.name}', CARGO = '${employee.position}', CPF = '${employee.cpf}',
+    let date = "";
+
+    if (employee.startDate) {
+      const startDate = new Date(employee.startDate);
+
+      const year = startDate.getUTCFullYear();
+      const month = String(startDate.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(startDate.getUTCDate()).padStart(2, "0");
+
+      date = `${year}-${month}-${day}`;
+    }
+
+    const query = `UPDATE LOJA_VENDEDOR SET NOME_VENDEDOR = '${employee.name}', CARGO = '${employee.position}', DATA_IMPORTACAO = '${date}', CPF = '${employee.cpf}',
      ID_TURNOS = ${employee.selectedShift} WHERE CODIGO_lOJA = '${employee.storeCode}' AND ID_VENDEDOR_LINX = ${id}`;
 
     const result = await pool.request().query(query);
