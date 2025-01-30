@@ -264,9 +264,9 @@ export async function selectScaleApprovalRequest(userLogin: string, month: numbe
 
   try {
 
-    const query = `SELECT A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
+    const query = `SELECT distinct A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
     A.DATA_SOLICITACAO AS requestDate, A.DATA_APROVACAO AS approvalDate, A.STATUS AS status FROM APROVACAO_ESCALA A
-    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = ${userLogin}
+    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = "${userLogin}"
     AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
 
     const result = (await pool.request().query(query)).recordset;
