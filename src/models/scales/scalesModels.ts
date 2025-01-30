@@ -259,17 +259,20 @@ export async function insertInTableScaleApproval(data: IScaleApproval) {
   }
 }
 
-export async function selectScaleApprovalRequest(month: number, year: number) {
+export async function selectScaleApprovalRequest(userLogin: string, month: number, year: number) {
   const pool = await connection.openConnection();
+
+  console.log("userLogin Cokkie", userLogin)
 
   try {
 /*     const query = `SELECT TOP 1 DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
     DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
     WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`; */
 
-    const query = `SELECT ID AS id, DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
-    DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
-    WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+    const query = `SELECT A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
+    A.DATA_SOLICITACAO AS requestDate, A.DATA_APROVACAO AS approvalDate, A.STATUS AS status FROM APROVACAO_ESCALA A
+    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = ${userLogin}
+    AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
 
     const result = (await pool.request().query(query)).recordset;
 

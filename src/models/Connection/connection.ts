@@ -24,6 +24,7 @@ export async function openConnection(): Promise<sql.ConnectionPool> {
     throw error;
   }
 }
+
 export async function closeConnection(): Promise<void> {
   if (pool) {
     try {

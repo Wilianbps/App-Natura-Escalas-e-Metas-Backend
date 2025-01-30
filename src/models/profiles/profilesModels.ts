@@ -26,7 +26,7 @@ export async function selectStoreByUser(user: string) {
 export async function selectPathBeepInput() {
   const pool = await connection.openConnection();
   try {
-    const query = `SELECT VALOR  AS path FROM [DGCS_ENTBIP].[dbo].[PARAMETROS_DGCS] WHERE NOME_PARAMETRO = 'Acesso_Entrada_Bipada'`;
+    const query = `SELECT VALOR  AS path FROM PARAMETROS_DGCS WHERE NOME_PARAMETRO = 'Acesso_Entrada_Bipada'`;
 
     const result = await pool.request().query(query);
 

@@ -18,7 +18,6 @@ import { IScaleApproval } from "src/models/scales/scales";
 import { splitsArrayIntoTwoParts } from "./utils/splitsArrayIntoTwoParts";
 import { removeDuplicateObjectOfScaleByFortnight } from "./utils/removeDuplicateObjectOfScaleByFortnight";
 
-
 export async function findScaleByDate(req: Request, res: Response) {
   try {
     const { date, storeCode } = req.query;
@@ -63,7 +62,10 @@ export async function findScaleSummary(req: Request, res: Response) {
   }
 }
 
-export async function findScaleSummarysByFortnight(req: Request, res: Response) {
+export async function findScaleSummarysByFortnight(
+  req: Request,
+  res: Response
+) {
   try {
     const { month, year, storeCode } = req.query;
 
@@ -78,14 +80,12 @@ export async function findScaleSummarysByFortnight(req: Request, res: Response) 
 
     const data = removeDuplicateObjectOfScaleByFortnight(splitArray as []);
 
-    res.status(200).json(data); 
-
+    res.status(200).json(data);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
   }
 }
-
 
 export async function updateScaleByDate(req: Request, res: Response) {
   try {
@@ -213,11 +213,12 @@ export async function postScaleApprovalRequest(req: Request, res: Response) {
 
 export async function findScaleApprovalRequest(req: Request, res: Response) {
   try {
-    const { month, year } = req.query;
+    const { userLogin, month, year } = req.query;
 
-    if (!month || !year) return res.status(400).send();
+    if (!userLogin || !month || !year) return res.status(400).send();
 
     const result = await selectScaleApprovalRequest(
+      String(userLogin),
       Number(month),
       Number(year)
     );
@@ -250,10 +251,8 @@ export async function putScaleApprovalRequest(req: Request, res: Response) {
     } else {
       res.status(400).send();
     }
-    
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
   }
 }
-
