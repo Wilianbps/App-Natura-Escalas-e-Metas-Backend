@@ -9,6 +9,8 @@ export async function findStoreByUser(req: Request, res: Response) {
 
     const result = await selectStoreByUser(user as string);
 
+    console.log(result)
+
     res.status(200).json(result);
   } catch (error) {
     console.log(error, "erro na solicitação");

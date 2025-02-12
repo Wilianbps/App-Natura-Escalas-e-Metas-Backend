@@ -165,16 +165,17 @@ export async function findFinishedScaleByMonth(req: Request, res: Response) {
 
 export async function updateFinishedScaleByMonth(req: Request, res: Response) {
   try {
-    const { storeCode, month, year, endScaleDate } = req.query;
+    const { userLogin, storeCode, month, year, endScaleDate } = req.query;
 
-    if (!storeCode || !month || !year || !endScaleDate)
+    if (!userLogin || !storeCode || !month || !year || !endScaleDate)
       return res.status(400).send();
 
     const success = await updateFinishedScale(
-      storeCode as string,
+      String(userLogin),
+      String(storeCode),
       Number(month),
       Number(year),
-      endScaleDate as string
+      String(endScaleDate)
     );
 
     if (success) {
