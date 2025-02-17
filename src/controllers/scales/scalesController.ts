@@ -214,17 +214,26 @@ export async function postScaleApprovalRequest(req: Request, res: Response) {
 
 export async function findScaleApprovalRequest(req: Request, res: Response) {
   try {
-    const { userLogin, month, year } = req.query;
+    const { userLogin, profileLogin, month, year } = req.query;
 
-    if (!userLogin || !month || !year) return res.status(400).send();
+    console.log("profileLogin", profileLogin);
+
+    if (!userLogin || !profileLogin || !month || !year)
+      return res.status(400).send();
 
     const result = await selectScaleApprovalRequest(
       String(userLogin),
+      String(profileLogin),
       Number(month),
       Number(year)
     );
 
-    res.status(200).json(result);
+    if (result === undefined) {
+     return res.status(400).send()
+    } 
+
+    return res.status(200).json(result);
+    
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

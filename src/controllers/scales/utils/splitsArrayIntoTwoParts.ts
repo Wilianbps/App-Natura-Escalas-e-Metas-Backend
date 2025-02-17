@@ -20,8 +20,6 @@ export function splitsArrayIntoTwoParts(scales: IScales[]) {
   const arrayScales2: IScales[] = [];
   const resultArray2: IDataScale[] = [];
   const mapArray2 = new Map();
-/* 
-  console.log("scales", scales) */
 
   let data = [];
 

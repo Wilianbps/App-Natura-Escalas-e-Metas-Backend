@@ -36,7 +36,11 @@ ORDER BY NOME_VENDEDOR ASC`;
   }
 }
 
-export async function selectScaleSummary(month: string, year: string, storeCode: string) {
+export async function selectScaleSummary(
+  month: string,
+  year: string,
+  storeCode: string
+) {
   const pool = await connection.openConnection();
 
   try {
@@ -251,15 +255,30 @@ export async function insertInTableScaleApproval(data: IScaleApproval) {
   }
 }
 
-export async function selectScaleApprovalRequest(userLogin: string, month: number, year: number) {
+export async function selectScaleApprovalRequest(
+  userLogin: string,
+  profileLogin: string,
+  month: number,
+  year: number
+) {
   const pool = await connection.openConnection();
 
   try {
+    let query = "";
 
-    const query = `SELECT distinct A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
+    if (profileLogin === "Gerente Loja") {
+      query = `SELECT ID AS id, DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
+      DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
+      WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+    } else if (
+      profileLogin === "Supervisão Loja" ||
+      profileLogin === "Master"
+    ) {
+      query = `SELECT distinct A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
     A.DATA_SOLICITACAO AS requestDate, A.DATA_APROVACAO AS approvalDate, A.STATUS AS status FROM APROVACAO_ESCALA A
-    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = "${userLogin}"
+    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = '${userLogin}'
     AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+    } 
 
     const result = (await pool.request().query(query)).recordset;
 

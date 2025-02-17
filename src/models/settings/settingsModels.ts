@@ -5,6 +5,7 @@ import {
   ISettings,
   type IInfoAddEmployee,
   type IInfoUpdateEmployee,
+  type IShifts,
 } from "./settings";
 
 export async function execProcImportSellers() {
@@ -289,6 +290,58 @@ export async function updateEmployee(
     const result = await pool.request().query(query);
 
     return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta: ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function findShiftHours(storeCode: string) {
+  const pool = await connection.openConnection();
+  try {
+    const query = `SELECT ID as id, TURNO AS turn, convert(VARCHAR(5),HR_INICIO) startTime, convert(VARCHAR(5),HR_FIM) AS endTime FROM TURNOS WHERE CODIGO_LOJA = '${storeCode}'`;
+    const shifts = await pool.request().query(query);
+    return shifts.recordset;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function updateShifitsByStore(shifts: IShifts, storeCode: string) {
+  const pool = await connection.openConnection();
+  try {
+    // Mapeamento correto para os valores do banco de dados
+    const shiftTypeMap: Record<string, string> = {
+      morning: "Matutino",
+      afternoon: "Vespertino",
+      nocturnal: "Noturno",
+    };
+
+    for (const [shiftKey, shift] of Object.entries(shifts)) {
+      if (!shift) return;
+      const { startTime, endTime } = shift;
+
+      const shiftType = shiftTypeMap[shiftKey]; // Converte "morning" -> "Matutino"
+
+      const query = `UPDATE TURNOS SET HR_INICIO = '${startTime}', HR_FIM = '${endTime}' WHERE TURNO = '${shiftType}' AND CODIGO_LOJA  = '${storeCode}'`;
+
+      await pool.request().query(query);
+    };
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta: ${error.message}`);

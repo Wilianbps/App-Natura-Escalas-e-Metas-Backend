@@ -59,3 +59,15 @@ export interface ISettings {
   employeeStatus: IEmployeStatus[];
   flowScale: string;
 }
+
+interface IShift {
+  turn: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface IShifts {
+  morning?: IShift;
+  afternoon?: IShift;
+  nocturnal?: IShift;
+}
