@@ -9,6 +9,7 @@ export interface IDayDetails {
   turnId: number; // ID do turno
   status: number; // Status do dia
   startTime: string; // Horário de início
+  lunchTime: string; // Horário de almoço
   endTime: string;   // Horário de término
   dayOfWeek: number; // Dia da semana
   turn: string;      // Turno (T1, T2, T3)
@@ -69,6 +70,7 @@ export function removeDuplicateObjectOfScaleByFortnight(scaleSummary: IScaleSumm
                     turnId: day.turnId,
                     status: day.status,
                     startTime: day.startTime !== null ? formatInTimeZone(day.startTime, "UTC", "HH:mm")  : "",
+                    lunchTime: day.lunchTime !== null ? formatInTimeZone(day.lunchTime, "UTC", "HH:mm")  : "",
                     endTime: day.endTime !== null ? formatInTimeZone(day.endTime, "UTC", "HH:mm") : "",
                     dayOfWeek, // Armazena o cálculo do dayOfWeek
                     turn,      // Armazena o turno calculado
@@ -88,6 +90,7 @@ export function removeDuplicateObjectOfScaleByFortnight(scaleSummary: IScaleSumm
                   turnId: day.turnId,
                   status: day.status,
                   startTime: day.startTime !== null ? formatInTimeZone(day.startTime, "UTC", "HH:mm") : "",
+                  lunchTime: day.lunchTime !== null ? formatInTimeZone(day.lunchTime, "UTC", "HH:mm")  : "",
                   endTime: day.endTime !== null ? formatInTimeZone(day.endTime, "UTC", "HH:mm") : "",
                   dayOfWeek, // Armazena o cálculo do dayOfWeek
                   turn,      // Armazena o turno calculado

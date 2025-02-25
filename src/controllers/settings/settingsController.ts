@@ -7,6 +7,8 @@ import {
   updateSettingsEmployee,
   updateEmployee,
   updateSettings,
+  findShiftHours,
+  updateShifitsByStore,
 } from "../../models/settings/settingsModels";
 import {
   IEmployee,
@@ -17,6 +19,19 @@ import { removeDuplicateObject } from "./libs/removeDuplicateObject";
 import { addDayOffInArray } from "./libs/addDayOffInArray";
 import { addVacationInArray } from "./libs/addVacationInArray";
 import { filterDayOffAndVacation } from "./libs/filterDayOffAndVacation";
+
+interface IShift {
+  id?: number;
+  turn: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface IShifts {
+  morning?: IShift;
+  afternoon?: IShift;
+  nocturnal?: IShift;
+}
 
 export async function transformEmployees(
   employees: IEmployee[]
@@ -179,8 +194,44 @@ export async function updateEmployeeById(req: Request, res: Response) {
         .json({ message: "Erro ao fazer alteração do colaborador" });
     }
   } catch (err) {
-    return res
-      .status(500)
-      .json({ message: "Erro no servidor", error: err });
+    return res.status(500).json({ message: "Erro no servidor", error: err });
+  }
+}
+
+export async function getShiftHours(req: Request, res: Response) {
+  try {
+    const { storeCode } = req.query;
+
+    if (!storeCode) return res.status(400).send();
+
+    const result: IShift[] = await findShiftHours(String(storeCode));
+
+    const shifts: IShifts = {};
+
+    result.map((shift) => {
+      if (shift) {
+        if (shift.turn === "Matutino") shifts.morning = shift;
+        if (shift.turn === "Vespertino") shifts.afternoon = shift;
+        if (shift.turn === "Noturno") shifts.nocturnal = shift;
+      }
+    });
+
+    return res.status(200).json(shifts);
+  } catch (error) {
+    return res.status(500).json({ message: "Erro no servidor", error });
+  }
+}
+
+export async function updateShiftHours(req: Request, res: Response) {
+  try {
+    const { shifts, storeCode } = req.body;
+
+    if (!storeCode) return res.status(400).send();
+
+    await updateShifitsByStore(shifts as IShifts, String(storeCode));
+
+    return res.status(200).send();
+  } catch (error) {
+    return res.status(500).json({ message: "Erro no servidor", error });
   }
 }

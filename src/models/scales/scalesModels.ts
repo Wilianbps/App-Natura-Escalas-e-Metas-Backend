@@ -18,16 +18,7 @@ FROM
     W_DGCS_CONSULTA_ESCALAS 
 WHERE 
     CAST(DATA_ESCALA AS DATE) = '${date}' AND CODIGO_LOJA = '${storeCode}'
-ORDER BY 
-    CASE 
-        WHEN STATUS = 0 THEN 1  -- Coloca STATUS 0 por último
-        ELSE 0  -- Todos os outros casos
-    END,
-    DATA_ESCALA, 
-    CASE 
-        WHEN STATUS = 1 THEN ID_TURNO  -- Ordena por ID_TURNO se STATUS for 1
-        ELSE 999  -- Garante que outros casos fiquem depois de STATUS 1
-    END;`;
+ORDER BY NOME_VENDEDOR ASC`;
 
     const scale = await pool.request().query(query);
 
@@ -45,11 +36,15 @@ ORDER BY
   }
 }
 
-export async function selectScaleSummary(month: string, year: string, storeCode: string) {
+export async function selectScaleSummary(
+  month: string,
+  year: string,
+  storeCode: string
+) {
   const pool = await connection.openConnection();
 
   try {
-    const query = `SELECT ID_VENDEDOR_LINX AS id, NOME_VENDEDOR AS name, DATA_ESCALA AS date, DAY(DATA_ESCALA) AS day, MONTH(DATA_ESCALA) AS month, YEAR(DATA_ESCALA) AS year, ID_TURNO AS turnId, STATUS AS status, HR_INICIO AS startTime, HR_FIM AS endTime FROM W_DGCS_CONSULTA_ESCALAS_RESUMO WHERE MONTH(DATA_ESCALA) = '${month}' AND YEAR(DATA_ESCALA) = '${year}' AND CODIGO_LOJA = '${storeCode}' ORDER BY DATA_ESCALA, ID_TURNO`;
+    const query = `SELECT ID_VENDEDOR_LINX AS id, NOME_VENDEDOR AS name, DATA_ESCALA AS date, DAY(DATA_ESCALA) AS day, MONTH(DATA_ESCALA) AS month, YEAR(DATA_ESCALA) AS year, ID_TURNO AS turnId, STATUS AS status, HR_INICIO AS startTime, HR_INICIO_R AS lunchTime, HR_FIM AS endTime FROM W_DGCS_CONSULTA_ESCALAS_RESUMO WHERE MONTH(DATA_ESCALA) = '${month}' AND YEAR(DATA_ESCALA) = '${year}' AND CODIGO_LOJA = '${storeCode}' ORDER BY NOME_VENDEDOR`;
 
     const scaleSummary = await pool.request().query(query);
 
@@ -90,7 +85,7 @@ export async function updateScale(scales: IScale[]) {
           HR_ID31 = '${scale.options[17].type}', HR_ID32 = '${scale.options[18].type}', HR_ID33 = '${scale.options[19].type}', HR_ID34 = '${scale.options[20].type}', 
           HR_ID35 = '${scale.options[21].type}', HR_ID36 = '${scale.options[22].type}', HR_ID37 = '${scale.options[23].type}', HR_ID38 = '${scale.options[24].type}', 
           HR_ID39 = '${scale.options[25].type}', HR_ID40 = '${scale.options[26].type}', HR_ID41 = '${scale.options[27].type}', HR_ID42 = '${scale.options[28].type}', 
-          HR_ID43 = '${scale.options[29].type}' WHERE ID_VENDEDOR_LINX = ${scale.id} AND CAST(DATA_ESCALA AS DATE) = '${scale.date}'`;
+          HR_ID43 = '${scale.options[29].type}' WHERE ID_VENDEDOR_LINX = '${scale.id}' AND CAST(DATA_ESCALA AS DATE) = '${scale.date}'`;
           await pool.request().query(update);
         } catch (error) {
           if (error instanceof Error) {
@@ -210,6 +205,7 @@ export async function SelectFinishedScaleByMonth(month: number, year: number) {
 }
 
 export async function updateFinishedScale(
+  userLogin: string,
   storeCode: string,
   month: number,
   year: number,
@@ -218,7 +214,7 @@ export async function updateFinishedScale(
   const pool = await connection.openConnection();
 
   try {
-    const query = `UPDATE ESCALA_FINALIZADA SET DATA_ESCALA_FIM = '${endScaleDate}', FINALIZADA = 1 WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month}
+    const query = `UPDATE ESCALA_FINALIZADA SET LOGIN_USUARIO = '${userLogin}', DATA_ESCALA_FIM = '${endScaleDate}', FINALIZADA = 1 WHERE CODIGO_LOJA = '${storeCode}' AND DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month}
   AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
 
     await pool.request().query(query);
@@ -259,15 +255,30 @@ export async function insertInTableScaleApproval(data: IScaleApproval) {
   }
 }
 
-export async function selectScaleApprovalRequest(userLogin: string, month: number, year: number) {
+export async function selectScaleApprovalRequest(
+  userLogin: string,
+  profileLogin: string,
+  month: number,
+  year: number
+) {
   const pool = await connection.openConnection();
 
   try {
+    let query = "";
 
-    const query = `SELECT distinct A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
+    if (profileLogin === "Gerente Loja") {
+      query = `SELECT ID AS id, DESCRICAO AS description, RESPONSAVEL AS responsible, FILIAL AS branch, 
+      DATA_SOLICITACAO AS requestDate, DATA_APROVACAO AS approvalDate, STATUS AS status FROM APROVACAO_ESCALA 
+      WHERE DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+    } else if (
+      profileLogin === "Supervisão Loja" ||
+      profileLogin === "Master"
+    ) {
+      query = `SELECT distinct A.ID AS id, A.DESCRICAO AS description, A.RESPONSAVEL AS responsible, A.FILIAL AS branch,
     A.DATA_SOLICITACAO AS requestDate, A.DATA_APROVACAO AS approvalDate, A.STATUS AS status FROM APROVACAO_ESCALA A
-    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = "${userLogin}"
+    JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = '${userLogin}'
     AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
+    } 
 
     const result = (await pool.request().query(query)).recordset;
 

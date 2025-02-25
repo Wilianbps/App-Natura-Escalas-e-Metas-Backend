@@ -19,6 +19,7 @@ export interface IScaleSummary {
   turnId: number;
   status: number;
   startTime: string;
+  lunchTime: string
   endTime: string;
   dayOfWeek: number;
   turn: string;
@@ -80,6 +81,7 @@ export function removeDuplicateObject(scaleSummary: WeeksArray) {
           turnId: item.turnId,
           status: item.status,
           startTime: item.startTime !== null ? formatInTimeZone(item.startTime, "UTC", "HH:mm") : "",
+          lunchTime: item.lunchTime !== null ? formatInTimeZone(item.lunchTime, "UTC", "HH:mm")  : "",
           endTime: item.startTime !== null ? formatInTimeZone(item.endTime, "UTC", "HH:mm") : "",
           dayOfWeek: item.dayOfWeek,
           turn,

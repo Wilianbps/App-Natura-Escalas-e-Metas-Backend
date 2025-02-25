@@ -3,13 +3,13 @@ import { isBefore, parse } from "date-fns";
 interface IScales {
   id: string;
   name: string;
-  date: string; day: number; month: number; year: number; turnId: number; status: number; startTime: string; endTime: string; dayOfWeek: number; turn: string
+  date: string; day: number; month: number; year: number; turnId: number; status: number; startTime: string; endTime: string; lunchTime: string; dayOfWeek: number; turn: string
 }
 
 interface IDataScale {
   id: string;
   name: string;
-  days: { date: string; day: number; month: number; year: number; turnId: number; status: number; startTime: string; endTime: string; dayOfWeek: number; turn: string}[];
+  days: { date: string; day: number; month: number; year: number; turnId: number; status: number; startTime: string; endTime: string; lunchTime: string; dayOfWeek: number; turn: string}[];
 }
 
 export function splitsArrayIntoTwoParts(scales: IScales[]) {
@@ -20,8 +20,6 @@ export function splitsArrayIntoTwoParts(scales: IScales[]) {
   const arrayScales2: IScales[] = [];
   const resultArray2: IDataScale[] = [];
   const mapArray2 = new Map();
-/* 
-  console.log("scales", scales) */
 
   let data = [];
 
@@ -61,6 +59,7 @@ export function splitsArrayIntoTwoParts(scales: IScales[]) {
         turnId: item.turnId,
         status: item.status,
         startTime: item.startTime,
+        lunchTime: item.lunchTime,
         endTime: item.endTime,
         dayOfWeek: item.dayOfWeek,
         turn: item.turn,
@@ -87,6 +86,7 @@ export function splitsArrayIntoTwoParts(scales: IScales[]) {
         turnId: item.turnId,
         status: item.status,
         startTime: item.startTime,
+        lunchTime: item.lunchTime,
         endTime: item.endTime,    
         dayOfWeek: item.dayOfWeek,
         turn: item.turn    
