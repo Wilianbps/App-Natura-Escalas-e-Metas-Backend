@@ -4,6 +4,8 @@ import {
   insertInTableScaleApproval,
   SelectFinishedScaleByMonth,
   SelectInputFlow,
+  selectParamGenerateScaleNextMonth,
+  selectParamToAlterDayScale,
   selectScaleApprovalRequest,
   selectScaleByDate,
   selectScaleSummary,
@@ -216,8 +218,6 @@ export async function findScaleApprovalRequest(req: Request, res: Response) {
   try {
     const { userLogin, profileLogin, month, year } = req.query;
 
-    console.log("profileLogin", profileLogin);
-
     if (!userLogin || !profileLogin || !month || !year)
       return res.status(400).send();
 
@@ -229,11 +229,10 @@ export async function findScaleApprovalRequest(req: Request, res: Response) {
     );
 
     if (result === undefined) {
-     return res.status(400).send()
-    } 
+      return res.status(400).send();
+    }
 
     return res.status(200).json(result);
-    
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
@@ -261,6 +260,31 @@ export async function putScaleApprovalRequest(req: Request, res: Response) {
     } else {
       res.status(400).send();
     }
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function getParamGenerateScaleNextMonth(
+  req: Request,
+  res: Response
+) {
+  try {
+    const param = await selectParamGenerateScaleNextMonth();
+
+    return res.status(200).json(param)
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function getParamToAlterDayScale(req: Request, res: Response) {
+  try {
+    const param = await selectParamToAlterDayScale();
+
+    return res.status(200).json(param)
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

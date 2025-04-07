@@ -2,7 +2,7 @@ const config = {
   user: "wilian",
   password: "willkah1",
   server: "WIL-BRIT0\\SQLEXPRESS",
-  database: "DGCS_ENTBIP",
+  database: "DGCS_ENTBIP_000088",
   port: 1433,
   options: {
     encrypt: true,

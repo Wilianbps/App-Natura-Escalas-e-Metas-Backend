@@ -278,7 +278,7 @@ export async function selectScaleApprovalRequest(
     A.DATA_SOLICITACAO AS requestDate, A.DATA_APROVACAO AS approvalDate, A.STATUS AS status FROM APROVACAO_ESCALA A
     JOIN SUPERVISAO_LOJA B ON B.CODIGO_LOJA = A.CODIGO_LOJA WHERE B.LOGIN_USUARIO = '${userLogin}'
     AND DATEPART(MONTH, DATA_SOLICITACAO) = ${month} AND DATEPART(YEAR, DATA_SOLICITACAO) = ${year}`;
-    } 
+    }
 
     const result = (await pool.request().query(query)).recordset;
 
@@ -313,6 +313,52 @@ export async function updateScaleApprovalRequest(
     await pool.request().query(update);
 
     return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function selectParamGenerateScaleNextMonth() {
+  const pool = await connection.openConnection();
+
+  try {
+    const query =
+      "SELECT VALOR as day, STATUS as status FROM PARAMETROS_DGCS WHERE NOME_PARAMETRO = 'GERAR_ESCALA_PROX_MES'";
+
+    const selectParam = await pool.request().query(query);
+
+    return selectParam.recordset;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function selectParamToAlterDayScale() {
+  const pool = await connection.openConnection();
+
+  try {
+    const query =
+      "SELECT VALOR as day, STATUS as status FROM PARAMETROS_DGCS WHERE NOME_PARAMETRO = 'PERMITE_ALT_DIA_ESCALA'";
+
+    const selectParam = await pool.request().query(query);
+
+    return selectParam.recordset;
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);
