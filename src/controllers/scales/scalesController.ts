@@ -267,7 +267,7 @@ export async function putScaleApprovalRequest(req: Request, res: Response) {
 }
 
 export async function getParamGenerateScaleNextMonth(
-  req: Request,
+  _req: Request,
   res: Response
 ) {
   try {
@@ -280,7 +280,7 @@ export async function getParamGenerateScaleNextMonth(
   }
 }
 
-export async function getParamToAlterDayScale(req: Request, res: Response) {
+export async function getParamToAlterDayScale(_req: Request, res: Response) {
   try {
     const param = await selectParamToAlterDayScale();
 

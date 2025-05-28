@@ -28,6 +28,7 @@ export interface IEmployee {
     type?:string
   }[];
   flowScale?: string;
+  extraEmployee: boolean
 }
 
 export interface IInfoAddEmployee {
@@ -37,6 +38,7 @@ export interface IInfoAddEmployee {
   cpf: string | null
   selectedShift: number | false
   startDate: Date | null
+  extraEmployee: boolean
   store: string
   branchName: string
 }
@@ -47,6 +49,7 @@ export interface IInfoUpdateEmployee{
   cpf: string | null
   startDate: Date | null
   selectedShift: number | false
+  extraEmployee: boolean
   storeCode: string
 }
 

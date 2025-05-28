@@ -41,7 +41,7 @@ export async function findAllEmployees(storeCode: string) {
   const pool = await connection.openConnection();
   try {
     const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, 
-    NOME_VENDEDOR AS name, ATIVO AS status, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, 
+    NOME_VENDEDOR AS name, ATIVO AS status, VENDEDOR_EXTRA AS extraEmployee, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, 
     AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, CPF AS cpf, ADICIONADO_MANUALMENTE AS newUser, FLUXO_LOJA AS flowScale, 
     DATA_IMPORTACAO AS startDate FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
     const employees = await pool.request().query(query);
@@ -181,6 +181,8 @@ export async function updateSettingsEmployee(
 export async function insertEmployee(employee: IInfoAddEmployee) {
   const pool = await connection.openConnection();
 
+  console.log("extra Employee", employee.extraEmployee)
+
   try {
     let date = "";
 
@@ -218,7 +220,7 @@ export async function insertEmployee(employee: IInfoAddEmployee) {
         '${employee.name.toUpperCase()}',
         ${1},
         ${employee.selectedShift},
-        ${0},
+        ${employee.extraEmployee},
         '${employee.position}',
         '${date}',
         '${employee.cpf}',
@@ -284,7 +286,7 @@ export async function updateEmployee(
       date = `${year}-${month}-${day}`;
     }
 
-    const query = `UPDATE LOJA_VENDEDOR SET NOME_VENDEDOR = '${employee.name}', CARGO = '${employee.position}', DATA_IMPORTACAO = '${date}', CPF = '${employee.cpf}',
+    const query = `UPDATE LOJA_VENDEDOR SET NOME_VENDEDOR = '${employee.name}', VENDEDOR_EXTRA = ${employee.extraEmployee}, CARGO = '${employee.position}', DATA_IMPORTACAO = '${date}', CPF = '${employee.cpf}',
      ID_TURNOS = ${employee.selectedShift} WHERE CODIGO_lOJA = '${employee.storeCode}' AND ID_VENDEDOR_LINX = ${id}`;
 
     const result = await pool.request().query(query);
