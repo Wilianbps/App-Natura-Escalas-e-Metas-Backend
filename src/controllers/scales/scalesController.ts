@@ -9,6 +9,7 @@ import {
   selectScaleApprovalRequest,
   selectScaleByDate,
   selectScaleSummary,
+  selectStoresScaleStatus,
   updateFinishedScale,
   updateScale,
   updateScaleApprovalRequest,
@@ -273,7 +274,7 @@ export async function getParamGenerateScaleNextMonth(
   try {
     const param = await selectParamGenerateScaleNextMonth();
 
-    return res.status(200).json(param)
+    return res.status(200).json(param);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();
@@ -284,7 +285,20 @@ export async function getParamToAlterDayScale(_req: Request, res: Response) {
   try {
     const param = await selectParamToAlterDayScale();
 
-    return res.status(200).json(param)
+    return res.status(200).json(param);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function findStoresScaleStatus(req: Request, res: Response) {
+  try {
+    const { currentDate } = req.query;
+
+    const stores = await selectStoresScaleStatus(String(currentDate));
+
+    return res.status(200).json(stores);
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

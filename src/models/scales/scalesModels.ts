@@ -371,3 +371,25 @@ export async function selectParamToAlterDayScale() {
     console.log("Conexão fechada");
   }
 }
+
+export async function selectStoresScaleStatus(date: string) {
+  const pool = await connection.openConnection();
+
+  try {
+    const query = `SELECT CODIGO_LOJA as scaleCode, FILIAL as branch, LOGIN_USUARIO as userLogin, DATA_ESCALA_FIM as date, STATUS AS status FROM FN_DGCS_DASH_ESCALA_FINALIZADA ('${date}') ORDER BY 5`;
+
+    const selectStores = await pool.request().query(query);
+
+    return selectStores.recordset;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}

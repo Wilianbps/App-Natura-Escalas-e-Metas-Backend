@@ -13,6 +13,7 @@ import {
   findScaleSummarysByFortnight,
   getParamGenerateScaleNextMonth,
   getParamToAlterDayScale,
+  findStoresScaleStatus,
 } from "../../controllers/scales/scalesController";
 
 const router = express.Router();
@@ -30,5 +31,6 @@ router.post("/post-scales-approval-request", postScaleApprovalRequest);
 router.put("/put-scales-approval-request", putScaleApprovalRequest);
 router.get("/get-param-generate-scale-next-month", getParamGenerateScaleNextMonth);
 router.get("/get-param-to-alter-day-scale", getParamToAlterDayScale);
+router.get("/get-stores-scale-status", findStoresScaleStatus)
 
 export default router;
