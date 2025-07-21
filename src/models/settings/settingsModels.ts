@@ -43,7 +43,7 @@ export async function findAllEmployees(storeCode: string) {
     const query = `SELECT ID_VENDEDOR_LINX AS idSeler, ID_AUSENCIA_PROGRAMADA AS idDayOff, CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS userLogin, 
     NOME_VENDEDOR AS name, ATIVO AS status, VENDEDOR_EXTRA AS extraEmployee, CARGO AS office, ID_TURNOS AS idShift, TURNO AS shift, HR_INICIO AS startTime, HR_FIM AS finishTime, 
     AUSENCIA_INI AS startVacation, AUSENCIA_FIM AS finishVacation, TIPO_AUSENCIA AS typeAbsence, CPF AS cpf, ADICIONADO_MANUALMENTE AS newUser, FLUXO_LOJA AS flowScale, 
-    DATA_IMPORTACAO AS startDate FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}'`;
+    DATA_IMPORTACAO AS startDate FROM W_CONSULTA_COLABORADORES WHERE CODIGO_LOJA = '${storeCode}' ORDER BY 6 DESC, 5`;
     const employees = await pool.request().query(query);
     return employees.recordset;
   } catch (error) {
