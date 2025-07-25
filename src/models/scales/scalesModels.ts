@@ -180,13 +180,13 @@ export async function executeProcToLoadMonthScale(
   }
 }
 
-export async function SelectFinishedScaleByMonth(month: number, year: number) {
+export async function SelectFinishedScaleByMonth(month: number, year: number, storeCode: string) {
   const pool = await connection.openConnection();
 
   try {
-    const query = `SELECT CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS loginUser, DATA_ESCALA_INICIO AS startDate, 
+    const query = `SELECT TOP 1 CODIGO_LOJA AS storeCode, LOGIN_USUARIO AS loginUser, DATA_ESCALA_INICIO AS startDate, 
     DATA_ESCALA_FIM AS endDate, FINALIZADA AS finished FROM ESCALA_FINALIZADA 
-    WHERE DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month} AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year};`;
+    WHERE DATEPART(MONTH, DATA_ESCALA_INICIO) = ${month} AND DATEPART(YEAR, DATA_ESCALA_INICIO) = ${year} AND CODIGO_LOJA = '${storeCode}' ORDER BY DATA_ESCALA_INICIO DESC;`;
 
     const result = (await pool.request().query(query)).recordset;
 

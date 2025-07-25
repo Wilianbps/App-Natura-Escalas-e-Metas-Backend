@@ -150,13 +150,14 @@ export async function loadMonthScale(req: Request, res: Response) {
 
 export async function findFinishedScaleByMonth(req: Request, res: Response) {
   try {
-    const { month, year } = req.query;
+    const { month, year, storeCode } = req.query;
 
-    if (!month || !year) return res.status(400).send();
+    if (!month || !year || !storeCode) return res.status(400).send();
 
     const result = await SelectFinishedScaleByMonth(
       Number(month),
-      Number(year)
+      Number(year),
+      String(storeCode)
     );
 
     res.status(200).json(result);
