@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
   executeProcToLoadMonthScale,
+  getScaleByMonthDate,
   insertInTableScaleApproval,
   SelectFinishedScaleByMonth,
   SelectInputFlow,
@@ -13,6 +14,7 @@ import {
   updateFinishedScale,
   updateScale,
   updateScaleApprovalRequest,
+  updateScaleByMonth,
 } from "../../models/scales/scalesModels";
 import { transformedScale } from "../../models/scales/utils/transformedScale";
 import { separateScaleByWeek } from "./utils/separateScaleByWeek";
@@ -20,6 +22,7 @@ import { removeDuplicateObject } from "./utils/removeDuplicateObject";
 import { IScaleApproval } from "src/models/scales/scales";
 import { splitsArrayIntoTwoParts } from "./utils/splitsArrayIntoTwoParts";
 import { removeDuplicateObjectOfScaleByFortnight } from "./utils/removeDuplicateObjectOfScaleByFortnight";
+import { getMonthlyScheduleGroupedByDayAndCollaborator } from "./utils/getMonthlyScheduleGroupedByDayAndCollaborator";
 
 export async function findScaleByDate(req: Request, res: Response) {
   try {
@@ -90,6 +93,27 @@ export async function findScaleSummarysByFortnight(
   }
 }
 
+export async function findScaleByMonthDate(req: Request, res: Response) {
+  try {
+    const { month, year, storeCode } = req.query;
+
+    if (!month || !year || !storeCode) return res.status(400).send();
+
+    const scale = await getScaleByMonthDate(
+      month as string,
+      year as string,
+      storeCode as string
+    );
+
+    const result = getMonthlyScheduleGroupedByDayAndCollaborator(scale);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
 export async function updateScaleByDate(req: Request, res: Response) {
   try {
     const { data } = req.body;
@@ -101,6 +125,24 @@ export async function updateScaleByDate(req: Request, res: Response) {
     } else {
       res.status(500).json({ message: (await result).message });
     }
+  } catch (error) {
+    console.log(error, "erro na solicitação");
+    return res.status(500).end();
+  }
+}
+
+export async function updateScaleByMonthDate(req: Request, res: Response) {
+  try {
+    const { scales } = req.body;
+    const { storeCode, loginUser } = req.query;
+
+    if (!scales || !storeCode || !loginUser) {
+      return res.status(400).json({ message: "Parâmetros inválidos." });
+    }
+
+    await updateScaleByMonth(scales, storeCode as string, loginUser as string);
+
+    res.status(200).json({ message: "Alteração feita com sucesso." });
   } catch (error) {
     console.log(error, "erro na solicitação");
     return res.status(500).end();

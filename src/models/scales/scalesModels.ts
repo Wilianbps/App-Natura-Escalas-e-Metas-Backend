@@ -1,5 +1,18 @@
 import connection from "../Connection/connection";
+import sql from "mssql";
 import { IScale, IScaleApproval } from "./scales";
+
+type ScaleType = {
+  type: "I" | "D";
+  newStatus: number;
+  absenceId: number | null;
+  date: string;
+};
+
+export type IScaleMonthDate = Record<
+  string,
+  { name: string; days: Record<number, ScaleType> }
+>;
 
 export async function selectScaleByDate(date: string, storeCode: string) {
   const pool = await connection.openConnection();
@@ -180,7 +193,74 @@ export async function executeProcToLoadMonthScale(
   }
 }
 
-export async function SelectFinishedScaleByMonth(month: number, year: number, storeCode: string) {
+export async function updateScaleByMonth(
+  scales: IScaleMonthDate,
+  storeCode: string,
+  loginUser: string
+) {
+  const pool = await connection.openConnection();
+
+  try {
+    // percorre colaboradores
+    for (const key of Object.keys(scales)) {
+      const collaborator = scales[key];
+
+      // percorre dias
+      for (const dayKey of Object.keys(collaborator.days)) {
+        const scaleType = collaborator.days[Number(dayKey)];
+
+        // INSERT quando type === 'I'
+        if (scaleType.type === "I") {
+          await pool
+            .request()
+            .input("CODIGO_LOJA", sql.VarChar, storeCode)
+            .input("LOGIN_USUARIO", sql.VarChar, loginUser)
+            // Se você já tem o ID_VENDEDOR_LINX, passe-o aqui:
+            .input("ID_VENDEDOR_LINX", sql.Int, Number(key))
+            .input("DATA_INICIO", sql.Date, scaleType.date)
+            .input("DATA_FIM", sql.Date, scaleType.date)
+            .input("TIPO_AUSENCIA", sql.VarChar, "I")
+            .input("FINALIZADA", sql.Bit, 0).query(`
+              INSERT INTO AUSENCIA_PROGRAMADA
+                (CODIGO_LOJA, LOGIN_USUARIO, ID_VENDEDOR_LINX,
+                 DATA_INICIO, DATA_FIM, TIPO_AUSENCIA, FINALIZADA)
+              VALUES
+                (@CODIGO_LOJA, @LOGIN_USUARIO, @ID_VENDEDOR_LINX,
+                 @DATA_INICIO, @DATA_FIM, @TIPO_AUSENCIA, @FINALIZADA)
+            `);
+
+          console.log("→ INSERT realizado com sucesso.");
+        }
+
+        // DELETE quando type === 'D'
+        if (scaleType.type === "D" && scaleType.absenceId !== null) {
+          await pool.request().input("ID", sql.Int, scaleType.absenceId).query(`
+              DELETE FROM AUSENCIA_PROGRAMADA
+              WHERE ID = @ID
+            `);
+
+          console.log(`→ DELETE do ID ${scaleType.absenceId} realizado.`);
+        }
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`Erro ao executar a consulta: ${error.message}`);
+    } else {
+      console.error("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function SelectFinishedScaleByMonth(
+  month: number,
+  year: number,
+  storeCode: string
+) {
   const pool = await connection.openConnection();
 
   try {
@@ -381,6 +461,43 @@ export async function selectStoresScaleStatus(date: string) {
     const selectStores = await pool.request().query(query);
 
     return selectStores.recordset;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(`Erro ao executar a consulta ${error.message}`);
+    } else {
+      console.log("Erro desconhecido ao executar a consulta");
+    }
+    throw error;
+  } finally {
+    await connection.closeConnection();
+    console.log("Conexão fechada");
+  }
+}
+
+export async function getScaleByMonthDate(
+  month: string,
+  year: string,
+  storeCode: string
+) {
+  const pool = await connection.openConnection();
+
+  try {
+    const query = `SELECT
+    CODIGO_LOJA AS storeCode,
+    DATA_ESCALA AS date,
+    ID_VENDEDOR_LINX AS id,
+    ID_AUSENCIA_PROGRAMADA AS absenceId,
+    NOME_VENDEDOR AS name,
+    STATUS AS status,
+    ACTIVE_DAYS AS activeDays
+FROM
+    [dbo].[W_DGCS_CONSULTA_ESCALAS]
+WHERE MONTH(DATA_ESCALA) = '${month}' AND YEAR(DATA_ESCALA) = '${year}' AND CODIGO_LOJA = '${storeCode}'
+ORDER BY NOME_VENDEDOR ASC`;
+
+    const scale = await pool.request().query(query);
+
+    return scale.recordset;
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Erro ao executar a consulta ${error.message}`);
