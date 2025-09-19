@@ -215,11 +215,10 @@ export async function updateScaleByMonth(
             .request()
             .input("CODIGO_LOJA", sql.VarChar, storeCode)
             .input("LOGIN_USUARIO", sql.VarChar, loginUser)
-            // Se você já tem o ID_VENDEDOR_LINX, passe-o aqui:
             .input("ID_VENDEDOR_LINX", sql.Int, Number(key))
             .input("DATA_INICIO", sql.Date, scaleType.date)
             .input("DATA_FIM", sql.Date, scaleType.date)
-            .input("TIPO_AUSENCIA", sql.VarChar, "I")
+            .input("TIPO_AUSENCIA", sql.VarChar, "FOLGA")
             .input("FINALIZADA", sql.Bit, 0).query(`
               INSERT INTO AUSENCIA_PROGRAMADA
                 (CODIGO_LOJA, LOGIN_USUARIO, ID_VENDEDOR_LINX,
