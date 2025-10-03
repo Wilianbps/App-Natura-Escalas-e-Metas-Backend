@@ -32,11 +32,18 @@ export function getMonthlyScheduleGroupedByDayAndCollaborator(
 ): SplitMonthlySchedule {
   if (!scaleArray || scaleArray.length === 0) return [[], []];
 
+  // Usa o primeiro registro como referência
   const sampleDate = scaleArray[0].date;
-  const year = sampleDate.getUTCFullYear();
-  const month = sampleDate.getUTCMonth();
-  const lastDay = getDaysInMonth(sampleDate);
 
+  // Extrai ano, mês e dia corretamente no fuso UTC
+  const year = parseInt(formatInTimeZone(sampleDate, "UTC", "yyyy"));
+  const month = parseInt(formatInTimeZone(sampleDate, "UTC", "MM"));
+  const day = parseInt(formatInTimeZone(sampleDate, "UTC", "dd"));
+
+  // Pega o último dia do mês
+  const lastDay = getDaysInMonth(new Date(year, month - 1));
+
+  // Agrupa colaboradores
   const byPerson = new Map<string, { name: string; entries: RawScaleEntry[] }>();
   for (const entry of scaleArray) {
     if (!byPerson.has(entry.id)) {
@@ -52,9 +59,9 @@ export function getMonthlyScheduleGroupedByDayAndCollaborator(
     const firstDays: DailySchedule[] = [];
     const secondDays: DailySchedule[] = [];
 
-    // Primeiro, adiciona todos os registros reais
+    // Adiciona registros reais
     entries.forEach(e => {
-      const day = e.date.getUTCDate();
+      const day = parseInt(formatInTimeZone(e.date, "UTC", "dd"));
       const daily: DailySchedule = {
         date: e.date,
         status: e.status,
@@ -65,21 +72,11 @@ export function getMonthlyScheduleGroupedByDayAndCollaborator(
       else secondDays.push(daily);
     });
 
-    // Depois, preenche os dias que não existem com status null
-    for (let day = 1; day <= 15; day++) {
-      if (!firstDays.some(d => d.date.getUTCDate() === day)) {
+    // Preenche dias faltantes na primeira quinzena
+    for (let d = 1; d <= 15; d++) {
+      if (!firstDays.some(dayObj => parseInt(formatInTimeZone(dayObj.date, "UTC", "dd")) === d)) {
         firstDays.push({
-          date: new Date(Date.UTC(year, month, day)),
-          status: null,
-          activeDays: null,
-          absenceId: null,
-        });
-      }
-    }
-    for (let day = 16; day <= lastDay; day++) {
-      if (!secondDays.some(d => d.date.getUTCDate() === day)) {
-        secondDays.push({
-          date: new Date(Date.UTC(year, month, day)),
+          date: new Date(Date.UTC(year, month - 1, d)),
           status: null,
           activeDays: null,
           absenceId: null,
@@ -87,7 +84,19 @@ export function getMonthlyScheduleGroupedByDayAndCollaborator(
       }
     }
 
-    // Ordena os dias
+    // Preenche dias faltantes na segunda quinzena
+    for (let d = 16; d <= lastDay; d++) {
+      if (!secondDays.some(dayObj => parseInt(formatInTimeZone(dayObj.date, "UTC", "dd")) === d)) {
+        secondDays.push({
+          date: new Date(Date.UTC(year, month - 1, d)),
+          status: null,
+          activeDays: null,
+          absenceId: null,
+        });
+      }
+    }
+
+    // Ordena dias
     firstDays.sort((a, b) => a.date.getTime() - b.date.getTime());
     secondDays.sort((a, b) => a.date.getTime() - b.date.getTime());
 
@@ -95,7 +104,7 @@ export function getMonthlyScheduleGroupedByDayAndCollaborator(
     secondHalf.push({ id, name, days: secondDays });
   });
 
-  // Ordena os colaboradores pelo nome
+  // Ordena colaboradores por nome
   const sortByName = (a: PersonMonthlySchedule, b: PersonMonthlySchedule) =>
     a.name.localeCompare(b.name);
 
